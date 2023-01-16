@@ -1,0 +1,16 @@
+.canvas-container{
+    display:flex;
+    justify-content: right;
+    align-items: center;
+}
+
+.canvas{
+    width:80vw;
+    height:90vh;
+    border:white solid 3px;
+    margin:10px;
+}
+
+body{
+    background-color: #313131;
+}
