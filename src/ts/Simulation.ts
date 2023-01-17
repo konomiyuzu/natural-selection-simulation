@@ -183,7 +183,7 @@ class Simulation {
         .reduce((a,b) => a+b,0)/this.animals.length;
 
         let averageAnimal = new Animal(averagePosition,averageEnergy,this.averageAnimalTraits)
-        averageAnimal.age = new SimulationTime(averageAge);
+        averageAnimal.age = new SimulationTime(Math.round(averageAge));
         return averageAnimal;
     }
 
