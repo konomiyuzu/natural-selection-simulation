@@ -51,7 +51,7 @@ class Camera {
     static handleScroll(e: WheelEvent) {
         let zoomChange = KeyboardInput.keys.shift ? (-e.deltaY / 2000) * 5 : -e.deltaY / 2000;
 
-        this.zoom += zoomChange;
+        this.zoom += zoomChange * this.zoom;
 
         this.zoom = Utility.clamp(this.zoom, 0.1, 10)
     }
