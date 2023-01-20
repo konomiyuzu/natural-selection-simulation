@@ -5,7 +5,7 @@ import Vector2D from "./lib/Vector2D";
 
 interface SimulationSettings {
     initialPopulation: number;
-    worldSize: Vector2D;
+    worldRadius: number;
     mutationChance: number;
     mutationSeverity: number;
     foodPerCycle: number;
@@ -152,11 +152,11 @@ class Simulation {
     static lastTenTPS: number[] = [];
     static settings: SimulationSettings = {
         initialPopulation: 20,
-        worldSize: new Vector2D(1500, 1500),
-        mutationChance: .25,
-        mutationSeverity: .05,
-        foodPerCycle: 1000,
-        maximumFood: 1000
+        worldRadius: 1000,
+        mutationChance: 1,
+        mutationSeverity: .1,
+        foodPerCycle: 500,
+        maximumFood: 3000
     }
 
     static get averageAnimalTraits(): AnimalTraits{
@@ -221,9 +221,12 @@ class Simulation {
     }
 
     static getRandomPositionInWorld(): Vector2D {
+        const radius = Math.sqrt(Math.random()) * this.settings.worldRadius;
+        const theta = 2 * Math.random() * Math.PI;
+
         return new Vector2D(
-            Random.randomInteger(-this.settings.worldSize.x / 2, this.settings.worldSize.x / 2),
-            Random.randomInteger(-this.settings.worldSize.y / 2, this.settings.worldSize.y / 2)
+            radius * Math.cos(theta),
+            radius * Math.sin(theta)
         )
     }
 

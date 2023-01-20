@@ -121,15 +121,8 @@ class Camera {
      */
 
     static queueBackground() {
-        let x = Simulation.settings.worldSize.x / 2;
-        let y = Simulation.settings.worldSize.y / 2;
-
-        let topRight = this.project(new Vector2D(-x, y));
-        let topLeft = this.project(new Vector2D(x, y));
-        let bottomRight = this.project(new Vector2D(-x, -y));
-        let bottomLeft = this.project(new Vector2D(x, -y));
-
-        this.canvas2D.queuePolygon([topRight, topLeft, bottomLeft, bottomRight], -10, "#00FF0020")
+        let position = this.project(Vector2D.zero);
+        this.canvas2D.queueCircle(position, Simulation.settings.worldRadius * this.zoom, -10, "#00FF0020")
     }
 
     static queueFoods(): void {
