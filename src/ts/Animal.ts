@@ -51,6 +51,11 @@ export enum AnimalActions{
     reproducing = "reproducing"
 }
 
+export enum AnimalDeathTypes{
+    starvation = "starved to death",
+    oldAge = "died of old age"
+}
+
 export const AnimalTraitsClampValues:{
     [key in keyof AnimalTraits]:{
         min:number;
@@ -70,12 +75,13 @@ export class Animal {
     energy: number;
     position: Vector2D;
     currentAction: AnimalActions;
-
+    reasonForDeath: AnimalDeathTypes | "still alive" = "still alive";
     traits: AnimalTraits;
     memory: {
         moveTarget: Vector2D | null;
         targetFood: Food | null;
     } = {} as typeof this.memory;
+
     get movementEnergyCost(): number{
         return EnergyCostConstants.speed * (1.5 ** this.traits.speed) * this.traits.speed;
     }
@@ -294,14 +300,12 @@ export class Animal {
 
         if(this.energy >= this.energyRequiredForReproductionAttempt) this.reproduce();
         this.energy -= this.metabolism;
-        if (this.energy <= 0) this.alive = false;
+        if (this.energy <= 0) this.die(AnimalDeathTypes.starvation);
     }
 
-    die(){
+    die(deathClause: AnimalDeathTypes){
         this.alive = false;
-    }
-
-    nextCycle(): void {
+        this.reasonForDeath = deathClause;
     }
 
     wander(): void{
@@ -336,8 +340,9 @@ export class Animal {
         this.traits = traits;
         this.currentAction = AnimalActions.decidingOnAction;
 
-        this.age.schedule(this.die.bind(this), AnimalSettings.maximumAge);
+        this.age.schedule((() => {this.die(AnimalDeathTypes.oldAge)}).bind(this), AnimalSettings.maximumAge);
     }
+    
 }
 
 export default Animal;
