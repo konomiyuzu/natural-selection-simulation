@@ -187,12 +187,12 @@ class Simulation {
         return averageAnimal;
     }
 
-    static startSimulation() {
+    static setUpSimulation() {
         this.reset();
         this.addAnimal(this.settings.initialPopulation);
         this.simulationTime.scheduleRepeating(this.nextCycle.bind(this), 100);
         this.addFood(this.settings.foodPerCycle)
-        if (!this.simulating) this.interval = setInterval(this.tick.bind(this), 1000 / this.targetTPS)
+        if (!this.simulating) this.continueSimulation();
     }
 
     static reset() {
@@ -215,9 +215,9 @@ class Simulation {
     }
 
     static changeTargetTPS(targetTPS: number) {
-        clearInterval(this.interval);
+        this.pauseSimulation();
         this.targetTPS = targetTPS;
-        this.interval = setInterval(this.tick.bind(this), 1000 / targetTPS)
+        this.continueSimulation();
     }
 
     static getRandomPositionInWorld(): Vector2D {
@@ -271,8 +271,14 @@ class Simulation {
     }
 
     static pauseSimulation(){
+        if(!this.simulating) throw new Error("tried to pause the simulation, but the simulation is already paused")
         clearInterval(this.interval);
         this.interval = null;
+    }
+
+    static continueSimulation(){
+        if(this.simulating) throw new Error("tried to continue the simulation, but the simulation is already running")
+        this.interval = setInterval(this.tick.bind(this), 1000 / this.targetTPS);
     }
 
     static nextCycle() {

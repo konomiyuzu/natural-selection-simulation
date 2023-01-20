@@ -10,7 +10,7 @@ window.Simulation = Simulation;
 Camera.init(document.getElementById("canvas"))
 //@ts-ignore
 window.Camera = Camera;
-Simulation.startSimulation();
+Simulation.setUpSimulation();
 Simulation.changeTargetTPS(1000)
 
 let tps = document.getElementById("tps")
