@@ -1,6 +1,5 @@
 import Animal, { AnimalTraits, baseAnimalTraits } from "./Animal"
 import Food from "./Food";
-import Random from "./lib/Random";
 import Vector2D from "./lib/Vector2D";
 
 interface SimulationSettings {
@@ -73,8 +72,8 @@ export class SimulationTime {
         }
 
         for (let schedule of this.scheduled) {
-            if (schedule != null) schedule.tick();
-
+            if (schedule == null) continue;
+            schedule.tick();
             if (schedule.single && schedule.timesRan >= 1) this.clearSchedule(schedule.id);
         }
     }
