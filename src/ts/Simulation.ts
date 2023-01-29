@@ -9,6 +9,45 @@ interface SimulationSettings {
     mutationSeverity: number;
     foodPerCycle: number;
     maximumFood: number;
+    collectData: boolean;
+    dataCollectionFrequency: number;
+}
+
+interface SimulationData{
+    time:SimulationTime;
+    averageTraits:AnimalTraits;
+    populationSize:number;
+    simulationSettings:SimulationSettings;
+}
+
+export class SimulationDataCollector{
+    static data: SimulationData[] = [];
+
+    static collectData(){
+        let data = {} as SimulationData;
+
+        data.time = new SimulationTime(Simulation.simulationTime.totalTicks);
+        data.averageTraits = Simulation.averageAnimalTraits;
+        data.populationSize = Simulation.populationSize;
+        data.simulationSettings = Object.assign({}, Simulation.settings);
+
+        this.data.push(data);
+        return data;
+    }
+
+    static downloadData(): void{
+        const dataURL = "data:text/plain;charset=utf-8,"+encodeURIComponent(JSON.stringify(this.data));
+
+        let element = document.createElement("a");
+        element.setAttribute("href", dataURL);
+        element.setAttribute("download", "data.json");
+
+        element.style.display = "none";
+        
+        document.body.append(element);
+        element.click();
+        document.body.removeChild(element);
+    }
 }
 
 export class SimulationTimeSchedule {
@@ -151,11 +190,25 @@ class Simulation {
     static lastTenTPS: number[] = [];
     static settings: SimulationSettings = {
         initialPopulation: 20,
-        worldRadius: 1000,
+        worldRadius: 350,
         mutationChance: 1,
         mutationSeverity: .1,
-        foodPerCycle: 500,
-        maximumFood: 3000
+        foodPerCycle: 300,
+        maximumFood: 3000,
+        collectData: true,
+        dataCollectionFrequency: 25
+    }
+
+    static get foodCount(){
+        return this.foods.length;
+    }
+
+    static get populationSize(){
+        return this.animals.length;
+    }
+
+    static get data(){
+        return SimulationDataCollector.data;
     }
 
     static get averageAnimalTraits(): AnimalTraits{
@@ -190,7 +243,8 @@ class Simulation {
         this.reset();
         this.addAnimal(this.settings.initialPopulation);
         this.simulationTime.scheduleRepeating(this.nextCycle.bind(this), 100);
-        this.addFood(this.settings.foodPerCycle)
+        if(this.settings.collectData) this.simulationTime.scheduleRepeating(SimulationDataCollector.collectData.bind(SimulationDataCollector),this.settings.dataCollectionFrequency);
+        this.addFood(this.settings.foodPerCycle);
         if (!this.simulating) this.continueSimulation();
     }
 
@@ -282,7 +336,6 @@ class Simulation {
 
     static nextCycle() {
         this.addFood(this.settings.foodPerCycle);
-        this.settings.foodPerCycle = Math.max(this.settings.foodPerCycle - 1, 100)
     }
 }
 

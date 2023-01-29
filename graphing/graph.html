@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <div id="graph" style="width:90vw; height:80vh; border: black solid 3px;"></div>
+    <input type="file" id="json" accept=".json">
+    <button id="load">load</button>
+</body>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script>
+
+    document.getElementById("load").onclick = async () => {
+        const file = document.getElementById("json").files[0];
+        if (file == null) {
+            alert("no file selected")
+            return;
+        }
+        const data = JSON.parse(await file.text());
+        const times = data.map(x => ((x.time.ticks/100) + x.time.cycles).toFixed(2));
+        const speedAvg = data.map(x => x.averageTraits.speed);
+        const senseAvg = data.map(x => x.averageTraits.sense);
+        const repUrgeAvg = data.map(x => x.averageTraits.reproductiveUrge);
+        const InvestAvg = data.map(x => x.averageTraits.offspringInvestment);
+        const chart = Highcharts.chart('graph', {
+            chart: {
+                type: 'line'
+            },
+            title: {
+                text: 'test'
+            },
+            xAxis: {
+                categories: times,
+                title:{
+                    text: "cycles"
+                }
+            },
+            yAxis: {
+                title: {
+                    text: 'avgValue'
+                }
+            },
+            series: [{
+                name: 'Speed',
+                data: speedAvg
+            }, {
+                name: 'Sense',
+                data: senseAvg
+            }, {
+                name: 'Reproductive Urge',
+                data: repUrgeAvg
+            }, {
+                name: 'Offspring Investment',
+                data: InvestAvg
+            }]
+        })
+    }
+</script>
+
+</html>

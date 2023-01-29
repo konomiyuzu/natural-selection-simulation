@@ -1,6 +1,6 @@
 import Camera from "./Camera";
 import Vector2D from "./lib/Vector2D";
-import Simulation from "./Simulation";
+import Simulation, { SimulationDataCollector } from "./Simulation";
 
 //@ts-ignore
 window.Vector2D = Vector2D;
@@ -10,6 +10,8 @@ window.Simulation = Simulation;
 Camera.init(document.getElementById("canvas"))
 //@ts-ignore
 window.Camera = Camera;
+//@ts-ignore
+window.data = SimulationDataCollector;
 Simulation.setUpSimulation();
 Simulation.changeTargetTPS(1000)
 
@@ -30,3 +32,7 @@ setInterval(() => {
     }
     average.innerHTML = out
 },1000/60);
+
+document.getElementById("downloadButton").onclick = ()=>{
+    SimulationDataCollector.downloadData.bind(SimulationDataCollector)();
+}
