@@ -2,6 +2,7 @@ import Food from "./Food";
 import Random from "./lib/Random";
 import Utility from "./lib/Utility";
 import Vector2D from "./lib/Vector2D";
+import AnimalNames from "./NameList";
 import Simulation, { SimulationTime } from "./Simulation";
 
 export interface AnimalTraits{
@@ -70,6 +71,7 @@ export const AnimalTraitsClampValues:{
 
 export class Animal {
     static radius: number = 10;
+    name: typeof AnimalNames[number];
     age: SimulationTime = SimulationTime.zero;
     alive: boolean = true;
     energy: number;
@@ -321,7 +323,7 @@ export class Animal {
     getVisibleFood(foods = Simulation.foods): Food[]{
         let visibleFood: Food[] = [];
         for (let food of foods) {
-            if (Vector2D.getDistance(this.position, food.position) <= TraitEffectConstants.sense * this.traits.sense) visibleFood.push(food)
+            if (Vector2D.getDistance(this.position, food.position) <= TraitEffectConstants.sense * Math.sqrt(this.traits.sense)) visibleFood.push(food)
         }
         return visibleFood;
     }
@@ -341,6 +343,7 @@ export class Animal {
         this.currentAction = AnimalActions.decidingOnAction;
 
         this.age.schedule((() => {this.die(AnimalDeathTypes.oldAge)}).bind(this), AnimalSettings.maximumAge);
+        this.name = Random.randomElementFromArray(AnimalNames as any);
     }
     
 }
