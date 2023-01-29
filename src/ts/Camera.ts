@@ -50,7 +50,7 @@ class Camera {
 
     static handleScroll(e: WheelEvent) {
         if(e.target != this.canvas2D.canvas) return;
-        let zoomChange = KeyboardInput.keys.ShiftLeft ? (-e.deltaY / 2000) * 5 : -e.deltaY / 2000;
+        let zoomChange = KeyboardInput.keys.ShiftLeft ? -e.deltaY / 2000 : (-e.deltaY / 2000) * 5;
 
         this.zoom += zoomChange * this.zoom;
 
@@ -88,8 +88,8 @@ class Camera {
 
     static update() {
 
-        let speed = KeyboardInput.keys.ShiftLeft ? this.cameraSpeed * 3 : this.cameraSpeed;
-        let zoomSpeed = KeyboardInput.keys.ShiftLeft ? this.zoom/20 : this.zoom/100;
+        let speed = KeyboardInput.keys.ShiftLeft ? this.cameraSpeed : this.cameraSpeed * 3;
+        let zoomSpeed = KeyboardInput.keys.ShiftLeft ? this.zoom/100 : this.zoom/20;
         speed /= this.zoom;
 
         if (KeyboardInput.keys.KeyW) {
