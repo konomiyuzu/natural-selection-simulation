@@ -4,7 +4,7 @@ import Simulation from "./Simulation";
 import Utility from "./lib/Utility";
 import KeyboardInput from "./KeyboardInput";
 import Food from "./Food";
-import Animal from "./Animal";
+import Animal, { TraitEffectConstants } from "./Animal";
 
 class Camera {
     static position: Vector2D = Vector2D.zero;
@@ -49,6 +49,7 @@ class Camera {
     }
 
     static handleScroll(e: WheelEvent) {
+        if(e.target != this.canvas2D.canvas) return;
         let zoomChange = KeyboardInput.keys.ShiftLeft ? (-e.deltaY / 2000) * 5 : -e.deltaY / 2000;
 
         this.zoom += zoomChange * this.zoom;
@@ -151,6 +152,8 @@ class Camera {
 
             if (Math.abs(position.x) - Animal.radius > this.canvas2D.width || Math.abs(position.y) - Animal.radius > this.canvas2D.height) continue;
             this.canvas2D.queueCircle(new Vector2D(Math.round(position.x),Math.round(position.y)), Animal.radius * this.zoom, 0, "grey")
+            if (this.senseVisualization) this.canvas2D.queueCircle(new Vector2D(Math.round(position.x),Math.round(position.y)), Math.sqrt(animal.traits.sense) * TraitEffectConstants.sense,1,"#FFFFFF03")
+            if (this.animalNames) this.canvas2D.queueText(new Vector2D(Math.round(position.x),Math.round(position.y + (Animal.radius + 3) * this.zoom)),animal.name,10 * this.zoom, 2)
         }
     }
     static render() {
