@@ -143,6 +143,39 @@ export class Canvas2DPolygonEntry implements Canvas2DEntry {
     }
 }
 
+export class Canvas2DTextEntry implements Canvas2DEntry{
+    zIndex: number;
+    args: {
+        position: Vector2D,
+        text: string,
+        color: string,
+        fontSize: number
+    }
+
+    /**
+     * @param {Vector2D} position should be in canvas coordinates
+     * @param {number} zIndex a number representing the zIndex
+     * @param {string} color a css color string
+     */
+    constructor(position: Vector2D, text: string, fontSize: number, zIndex: number = 0, color: string = "#FFFFFF") {
+        this.zIndex = zIndex;
+
+        this.args = {
+            position: position,
+            text: text,
+            color: color,
+            fontSize: fontSize
+        };
+    }
+
+    draw(context: CanvasRenderingContext2D) {
+        context.fillStyle = this.args.color;
+        context.textAlign = "center";
+        context.font = `${this.args.fontSize}px arial`
+        context.fillText(this.args.text,this.args.position.x, this.args.position.y)
+    }
+}
+
 export default class Canvas2D {
     canvas: HTMLCanvasElement;
     drawQueue: Canvas2DEntry[] = [];
@@ -377,6 +410,18 @@ export default class Canvas2D {
         )
 
         this.addToDrawQueue(entry)
+    }
+
+    queueText(position: Vector2D, text: string, fontSize:number, zIndex: number = 0, color:string = "#FFFFFF"): void{
+        const entry = new Canvas2DTextEntry(
+            this.vectorCoordinatesToCanvasCoordinates(position),
+            text,
+            fontSize,
+            zIndex,
+            color
+        )
+
+        this.addToDrawQueue(entry);
     }
 
     /**
