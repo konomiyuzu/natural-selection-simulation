@@ -256,15 +256,11 @@ class Simulation {
     }
 
     static get averageTPS(): number {
-        return this.lastTenTPS.reduce((a, b) => a + b, 0) / this.lastTenTPS.length;
+        return this.lastTenTPS.reduce((a, b) => a + b, 0) / Math.max(1,this.lastTenTPS.length);
     }
 
     static get simulating(): boolean {
         return this.interval != null;
-    }
-
-    static changeSettings(settings: Partial<typeof this.settings>) {
-        Object.assign(this.settings, settings);
     }
 
     static changeTargetTPS(targetTPS: number) {
