@@ -88,7 +88,7 @@ class Camera {
     static update() {
 
         let speed = KeyboardInput.keys.ShiftLeft ? this.cameraSpeed * 3 : this.cameraSpeed;
-        let zoomSpeed = KeyboardInput.keys.ShiftLeft ? this.zoom/10 : this.zoom/100;
+        let zoomSpeed = KeyboardInput.keys.ShiftLeft ? this.zoom/20 : this.zoom/100;
         speed /= this.zoom;
 
         if (KeyboardInput.keys.KeyW) {
@@ -113,6 +113,7 @@ class Camera {
             this.position = Vector2D.zero;
         }
 
+        this.zoom = Utility.clamp(this.zoom, 0.1, 10)
         this.render();
     }
 
