@@ -21,7 +21,7 @@ export class Random {
     }
 
     static randomArryIndexFromArray(arr:Array<any>):number{
-        return this.randomInteger(0,arr.length);
+        return this.randomInteger(0,arr.length - 1);
     }
 
     static randomElementFromArray<type>(arr:Array<type>):type{
