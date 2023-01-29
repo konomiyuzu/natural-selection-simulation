@@ -1,7 +1,7 @@
 export type AllowedKeys = typeof KeyboardInput.allowedKeys[number]
 
 class KeyboardInput{
-    static allowedKeys = ["w","a","s","d","shift"] as const;
+    static allowedKeys = ["KeyW","KeyA","KeyS","KeyD","ShiftLeft","Space","Equal","Minus"] as const;
     static #keys:Record<AllowedKeys, boolean> = {} as Record<AllowedKeys, boolean>;
     static initialized = false;
 
@@ -19,14 +19,14 @@ class KeyboardInput{
         }
 
         document.addEventListener("keydown", (e) => {
-            let key = e.key.toLowerCase() as AllowedKeys;
+            let key = e.code as AllowedKeys;
             if(this.allowedKeys.includes(key)){
                 this.keys[key] = true;
             }
         })
 
         document.addEventListener("keyup", (e) => {
-            let key = e.key.toLowerCase() as AllowedKeys;
+            let key = e.code as AllowedKeys;
             if(this.allowedKeys.includes(key)){
                 this.keys[key] = false;
             }

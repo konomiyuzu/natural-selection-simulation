@@ -49,7 +49,7 @@ class Camera {
     }
 
     static handleScroll(e: WheelEvent) {
-        let zoomChange = KeyboardInput.keys.shift ? (-e.deltaY / 2000) * 5 : -e.deltaY / 2000;
+        let zoomChange = KeyboardInput.keys.ShiftLeft ? (-e.deltaY / 2000) * 5 : -e.deltaY / 2000;
 
         this.zoom += zoomChange * this.zoom;
 
@@ -87,20 +87,30 @@ class Camera {
 
     static update() {
 
-        let speed = KeyboardInput.keys.shift ? this.cameraSpeed * 3 : this.cameraSpeed;
+        let speed = KeyboardInput.keys.ShiftLeft ? this.cameraSpeed * 3 : this.cameraSpeed;
+        let zoomSpeed = KeyboardInput.keys.ShiftLeft ? this.zoom/10 : this.zoom/100;
         speed /= this.zoom;
 
-        if (KeyboardInput.keys.w) {
+        if (KeyboardInput.keys.KeyW) {
             this.position.y += speed;
         }
-        if (KeyboardInput.keys.s) {
+        if (KeyboardInput.keys.KeyS) {
             this.position.y -= speed;
         }
-        if (KeyboardInput.keys.a) {
+        if (KeyboardInput.keys.KeyA) {
             this.position.x -= speed;
         }
-        if (KeyboardInput.keys.d) {
+        if (KeyboardInput.keys.KeyD) {
             this.position.x += speed;
+        }
+        if(KeyboardInput.keys.Equal){
+            this.zoom += zoomSpeed;
+        }
+        if(KeyboardInput.keys.Minus){
+            this.zoom -= zoomSpeed;
+        }
+        if(KeyboardInput.keys.Space) {
+            this.position = Vector2D.zero;
         }
 
         this.render();
