@@ -118,6 +118,10 @@ export class Vector2D {
     static getDistance(v0:Vector2D, v1:Vector2D): number{
         return v1.sub(v0).length
     }
+
+    copy(){
+        return new Vector2D(this.x,this.y)
+    }
 }
 
 export default Vector2D;
