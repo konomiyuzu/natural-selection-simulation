@@ -83,7 +83,8 @@ export class Animal {
         moveTarget: Vector2D | null;
         targetFood: Food | null;
     } = {} as typeof this.memory;
-
+    offspringCount: number = 0;
+    generation: number;
     get movementEnergyCost(): number{
         return EnergyCostConstants.speed * (1.5 ** this.traits.speed) * this.traits.speed;
     }
@@ -216,6 +217,7 @@ export class Animal {
     reproduce():void{
         this.energy -= this.reproductionCost;
         Simulation.animals.push(this.createOffspring());
+        this.offspringCount++;
     }
 
     /**searchForMate():void{
@@ -279,7 +281,7 @@ export class Animal {
             if(Random.randomChance(Simulation.settings.mutationChance)) traitValue += Random.randomFloat(-serverity,serverity)
             traits[trait] = Utility.clamp(traitValue,AnimalTraitsClampValues[trait].min,AnimalTraitsClampValues[trait].max);
         }
-        return new Animal(position,this.traits.offspringInvestment * TraitEffectConstants.offsprintInvestment, traits)
+        return new Animal(position,this.traits.offspringInvestment * TraitEffectConstants.offsprintInvestment, traits, this.generation + 1)
     }
 
     update(): void {
@@ -323,7 +325,8 @@ export class Animal {
     getVisibleFood(foods = Simulation.foods): Food[]{
         let visibleFood: Food[] = [];
         for (let food of foods) {
-            if (Vector2D.getDistance(this.position, food.position) <= TraitEffectConstants.sense * Math.sqrt(this.traits.sense)) visibleFood.push(food)
+            const relativePosition = this.position.sub(food.position)
+            if ((relativePosition.x **2) + (relativePosition.y**2) <= (TraitEffectConstants.sense * this.traits.sense)**2) visibleFood.push(food)
         }
         return visibleFood;
     }
@@ -336,7 +339,7 @@ export class Animal {
         return visibleAnimals;
     }
 
-    constructor(position: Vector2D, startingEnergy: number, traits: AnimalTraits) {
+    constructor(position: Vector2D, startingEnergy: number, traits: AnimalTraits, generation:number) {
         this.position = position;
         this.energy = startingEnergy;
         this.traits = traits;
@@ -344,6 +347,7 @@ export class Animal {
 
         this.age.schedule((() => {this.die(AnimalDeathTypes.oldAge)}).bind(this), AnimalSettings.maximumAge);
         this.name = Random.randomElementFromArray(AnimalNames as any);
+        this.generation = generation;
     }
     
 }
