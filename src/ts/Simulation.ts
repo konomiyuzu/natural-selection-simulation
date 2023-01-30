@@ -13,17 +13,17 @@ interface SimulationSettings {
     dataCollectionFrequency: number;
 }
 
-interface SimulationData{
-    time:SimulationTime;
-    averageTraits:AnimalTraits;
-    populationSize:number;
-    simulationSettings:SimulationSettings;
+interface SimulationData {
+    time: SimulationTime;
+    averageTraits: AnimalTraits;
+    populationSize: number;
+    simulationSettings: SimulationSettings;
 }
 
-export class SimulationDataCollector{
+export class SimulationDataCollector {
     static data: SimulationData[] = [];
 
-    static collectData(){
+    static collectData() {
         let data = {} as SimulationData;
 
         data.time = new SimulationTime(Simulation.simulationTime.totalTicks);
@@ -35,15 +35,15 @@ export class SimulationDataCollector{
         return data;
     }
 
-    static downloadData(): void{
-        const dataURL = "data:text/plain;charset=utf-8,"+encodeURIComponent(JSON.stringify(this.data));
+    static downloadData(): void {
+        const dataURL = "data:text/plain;charset=utf-8," + encodeURIComponent(JSON.stringify(this.data));
 
         let element = document.createElement("a");
         element.setAttribute("href", dataURL);
         element.setAttribute("download", "data.json");
 
         element.style.display = "none";
-        
+
         document.body.append(element);
         element.click();
         document.body.removeChild(element);
@@ -84,19 +84,19 @@ export class SimulationTime {
         return this.ticks + (100 * this.cycles)
     }
 
-    static get zero(): SimulationTime{
-        return new SimulationTime(0,0);
+    static get zero(): SimulationTime {
+        return new SimulationTime(0, 0);
     }
 
-    constructor(totalTicks:number);
+    constructor(totalTicks: number);
     constructor(ticks: number, cycle: number)
 
     constructor(ticks: number, cycle?: number) {
-        if(cycle != null){
+        if (cycle != null) {
             if (ticks > 100 || ticks < 0) throw new Error("ticks in invalid range")
             this.ticks = ticks;
             this.cycles = cycle
-        }else{
+        } else {
             this.ticks = ticks % 100;
             this.cycles = Math.floor(ticks / 100);
         }
@@ -199,23 +199,23 @@ class Simulation {
         dataCollectionFrequency: 25
     }
 
-    static get foodCount(){
+    static get foodCount() {
         return this.foods.length;
     }
 
-    static get populationSize(){
+    static get populationSize() {
         return this.animals.length;
     }
 
-    static get data(){
+    static get data() {
         return SimulationDataCollector.data;
     }
 
-    static get averageAnimalTraits(): AnimalTraits{
+    static get averageAnimalTraits(): AnimalTraits {
         let output = {} as AnimalTraits;
-        for(let trait in baseAnimalTraits){
+        for (let trait in baseAnimalTraits) {
             let average = this.animals.map(animal => animal.traits[trait]) //array of trait values
-            .reduce((a,b) => a+b,0)/this.animals.length; //summed then divided by length (averaged)
+                .reduce((a, b) => a + b, 0) / this.animals.length; //summed then divided by length (averaged)
 
             output[trait] = average;
         }
@@ -224,17 +224,17 @@ class Simulation {
     }
 
     //average of almost everything because why not
-    static get averageAnimal(): Animal{
+    static get averageAnimal(): Animal {
         let averagePosition = this.animals.map(animal => animal.position)
-        .reduce((a,b) => a.add(b),Vector2D.zero).scale(1/this.animals.length);
+            .reduce((a, b) => a.add(b), Vector2D.zero).scale(1 / this.animals.length);
 
         let averageEnergy = this.animals.map(animal => animal.energy)
-        .reduce((a,b) => a+b,0)/this.animals.length;
+            .reduce((a, b) => a + b, 0) / this.animals.length;
 
         let averageAge = this.animals.map(animal => animal.age.totalTicks)
-        .reduce((a,b) => a+b,0)/this.animals.length;
+            .reduce((a, b) => a + b, 0) / this.animals.length;
 
-        let averageAnimal = new Animal(averagePosition,averageEnergy,this.averageAnimalTraits)
+        let averageAnimal = new Animal(averagePosition, averageEnergy, this.averageAnimalTraits, 0)
         averageAnimal.age = new SimulationTime(Math.round(averageAge));
         return averageAnimal;
     }
@@ -243,9 +243,8 @@ class Simulation {
         this.reset();
         this.addAnimal(this.settings.initialPopulation);
         this.simulationTime.scheduleRepeating(this.nextCycle.bind(this), 100);
-        if(this.settings.collectData) this.simulationTime.scheduleRepeating(SimulationDataCollector.collectData.bind(SimulationDataCollector),this.settings.dataCollectionFrequency);
+        if (this.settings.collectData) this.simulationTime.scheduleRepeating(SimulationDataCollector.collectData.bind(SimulationDataCollector), this.settings.dataCollectionFrequency);
         this.addFood(this.settings.foodPerCycle);
-        if (!this.simulating) this.continueSimulation();
     }
 
     static reset() {
@@ -256,7 +255,7 @@ class Simulation {
     }
 
     static get averageTPS(): number {
-        return this.lastTenTPS.reduce((a, b) => a + b, 0) / Math.max(1,this.lastTenTPS.length);
+        return this.lastTenTPS.reduce((a, b) => a + b, 0) / Math.max(1, this.lastTenTPS.length);
     }
 
     static get simulating(): boolean {
@@ -264,9 +263,11 @@ class Simulation {
     }
 
     static changeTargetTPS(targetTPS: number) {
-        this.pauseSimulation();
         this.targetTPS = targetTPS;
-        this.continueSimulation();
+        if (this.simulating) {
+            this.pauseSimulation();
+            this.continueSimulation();
+        }
     }
 
     static getRandomPositionInWorld(): Vector2D {
@@ -289,7 +290,7 @@ class Simulation {
 
     static addAnimal(amount) {
         for (let i = 0; i < amount; i++) {
-            let animal = new Animal(this.getRandomPositionInWorld(), 100, baseAnimalTraits)
+            let animal = new Animal(this.getRandomPositionInWorld(), 100, baseAnimalTraits, 0)
             this.animals.push(animal)
         }
     }
@@ -302,9 +303,9 @@ class Simulation {
         this.foods = this.foods.filter(food => food.eaten == false);
         this.animals = this.animals.filter(animal => animal.alive);
 
-        if (this.lastTickTime != null) {    
+        if (this.lastTickTime != null) {
             let deltaTime = 1000 / (Date.now() - this.lastTickTime);
-            if(!isFinite(deltaTime)) deltaTime = 1000/this.targetTPS        
+            if (!isFinite(deltaTime)) deltaTime = 1000 / this.targetTPS
             this.tps = deltaTime;
             this.lastTenTPS.push(this.tps);
             if (this.lastTenTPS.length >= 11) this.lastTenTPS.shift()
@@ -312,21 +313,21 @@ class Simulation {
         this.simulationTime.tick();
 
         this.lastTickTime = Date.now();
-        
-        if(this.animals.length == 0) {
+
+        if (this.animals.length == 0) {
             alert("extinction 💀")
             this.pauseSimulation()
         }
     }
 
-    static pauseSimulation(){
-        if(!this.simulating) throw new Error("tried to pause the simulation, but the simulation is already paused")
+    static pauseSimulation() {
+        if (!this.simulating) throw new Error("tried to pause the simulation, but the simulation is already paused")
         clearInterval(this.interval);
         this.interval = null;
     }
 
-    static continueSimulation(){
-        if(this.simulating) throw new Error("tried to continue the simulation, but the simulation is already running")
+    static continueSimulation() {
+        if (this.simulating) throw new Error("tried to continue the simulation, but the simulation is already running")
         this.interval = setInterval(this.tick.bind(this), 1000 / this.targetTPS);
     }
 
