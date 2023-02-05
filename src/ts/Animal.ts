@@ -13,15 +13,15 @@ export interface AnimalTraits{
 }
 
 //this class is for settings that would be editable by the user;
-export class AnimalSettings{
-    static traitEffectConstants:AnimalTraits;
-    static EnergyCostConstants:{
+export interface AnimalSettings{
+    TraitEffectConstants:AnimalTraits;
+    EnergyCostConstants:{
         speed:number
         sense:number
         baseReproductionCost:number
     };
 
-    static maximumAge:number = 3000;
+    maximumAge:number;
 }
 
 export const baseAnimalTraits: AnimalTraits = {
@@ -29,19 +29,6 @@ export const baseAnimalTraits: AnimalTraits = {
     sense:1,
     reproductiveUrge:1,
     offspringInvestment:1,
-}
-
-export enum TraitEffectConstants {
-    speed = 3,
-    sense = 50,
-    reproductiveUrge = 30,
-    offsprintInvestment = 50
-}
-
-export enum EnergyCostConstants {
-    speed = 0.1,
-    sense = 0.1,
-    baseReproductionCost = 100,
 }
 
 export enum AnimalActions{
@@ -63,14 +50,16 @@ export const AnimalTraitsClampValues:{
         max:number
     }
 } = {
-    speed:{min:0.01,max:Infinity},
-    sense:{min:0.01,max:Infinity},
-    reproductiveUrge:{min:0.01,max:Infinity},
-    offspringInvestment:{min:0.01,max:Infinity}
+    speed:{min:0.0001,max:Infinity},
+    sense:{min:0.0001,max:Infinity},
+    reproductiveUrge:{min:0.0001,max:Infinity},
+    offspringInvestment:{min:0.0001,max:Infinity}
 };
 
 export class Animal {
     static radius: number = 10;
+    static settings: AnimalSettings;
+    static initialized: boolean = false;
     name: typeof AnimalNames[number];
     age: SimulationTime = SimulationTime.zero;
     alive: boolean = true;
@@ -86,15 +75,15 @@ export class Animal {
     offspringCount: number = 0;
     generation: number;
     get movementEnergyCost(): number{
-        return EnergyCostConstants.speed * (1.5 ** this.traits.speed) * this.traits.speed;
+        return Animal.settings.EnergyCostConstants.speed * (1.5 ** this.traits.speed) * this.traits.speed;
     }
 
     get reproductionCost(): number{
-        return EnergyCostConstants.baseReproductionCost + (this.traits.offspringInvestment * TraitEffectConstants.offsprintInvestment)
+        return Animal.settings.EnergyCostConstants.baseReproductionCost + (this.traits.offspringInvestment * Animal.settings.TraitEffectConstants.offspringInvestment)
     }
 
     get energyRequiredForReproductionAttempt(): number{
-        return this.reproductionCost + ((1/this.traits.reproductiveUrge) * TraitEffectConstants.reproductiveUrge);
+        return this.reproductionCost + ((1/this.traits.reproductiveUrge) * Animal.settings.TraitEffectConstants.reproductiveUrge);
     }
 
     get energyCostPerDay(): number{
@@ -102,7 +91,7 @@ export class Animal {
     }
 
     get metabolism(): number{
-        return this.traits.sense * EnergyCostConstants.sense;
+        return this.traits.sense * Animal.settings.EnergyCostConstants.sense;
     }
 
     get moveTarget(): Vector2D {
@@ -121,6 +110,12 @@ export class Animal {
         this.memory.targetFood = targetFood;
     }
 
+    static init(settings:AnimalSettings){
+        if(this.initialized) throw new Error("Animal already initialized");
+        this.settings = settings
+        this.initialized = true;
+    }
+
     setMoveTarget(moveTarget: Vector2D) {
         this.moveTarget = moveTarget;
     }
@@ -132,7 +127,7 @@ export class Animal {
     move(): void {
         let targetVector = this.moveTarget.sub(this.position);
         let speed = this.traits.speed;
-        let maxDistance = speed * TraitEffectConstants.speed;
+        let maxDistance = speed * Animal.settings.TraitEffectConstants.speed;
         let distance = targetVector.length;
         let direction = targetVector.normalized;
         if (distance == 0) {
@@ -281,7 +276,7 @@ export class Animal {
             if(Random.randomChance(Simulation.settings.mutationChance)) traitValue += Random.randomFloat(-serverity,serverity)
             traits[trait] = Utility.clamp(traitValue,AnimalTraitsClampValues[trait].min,AnimalTraitsClampValues[trait].max);
         }
-        return new Animal(position,this.traits.offspringInvestment * TraitEffectConstants.offsprintInvestment, traits, this.generation + 1)
+        return new Animal(position,this.traits.offspringInvestment * Animal.settings.TraitEffectConstants.offspringInvestment, traits, this.generation + 1)
     }
 
     update(): void {
@@ -326,7 +321,7 @@ export class Animal {
         let visibleFood: Food[] = [];
         for (let food of foods) {
             const relativePosition = this.position.sub(food.position)
-            if ((relativePosition.x **2) + (relativePosition.y**2) <= (TraitEffectConstants.sense * this.traits.sense)**2) visibleFood.push(food)
+            if ((relativePosition.x **2) + (relativePosition.y**2) <= (Animal.settings.TraitEffectConstants.sense * this.traits.sense)**2) visibleFood.push(food)
         }
         return visibleFood;
     }
@@ -334,19 +329,21 @@ export class Animal {
     getVisibleAnimals(animals = Simulation.animals): Animal[]{
         let visibleAnimals: Animal[] = [];
         for (let animal of animals) {
-            if (Vector2D.getDistance(this.position, animal.position) <= TraitEffectConstants.sense * this.traits.sense) visibleAnimals.push(animal)
+            if (Vector2D.getDistance(this.position, animal.position) <= Animal.settings.TraitEffectConstants.sense * this.traits.sense) visibleAnimals.push(animal)
         }
         return visibleAnimals;
     }
 
     constructor(position: Vector2D, startingEnergy: number, traits: AnimalTraits, generation:number) {
+        //none of the functions can be called if the animal doesnt exist so i just perform the check here
+        if(!Animal.initialized) throw new Error("Animal not initialized")
         this.position = position;
         this.energy = startingEnergy;
         this.traits = traits;
         this.currentAction = AnimalActions.decidingOnAction;
 
-        this.age.schedule((() => {this.die(AnimalDeathTypes.oldAge)}).bind(this), AnimalSettings.maximumAge);
-        this.name = Random.randomElementFromArray(AnimalNames as any);
+        this.age.schedule((() => {this.die(AnimalDeathTypes.oldAge)}).bind(this), Animal.settings.maximumAge);
+        this.name = Random.randomElementFromArray(AnimalNames);
         this.generation = generation;
     }
     

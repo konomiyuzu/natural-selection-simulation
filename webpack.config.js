@@ -1,8 +1,9 @@
 module.exports = {
     "mode": "development",
-    "entry": "./src/js/test.js",
+    "entry": "./src/js/Main.js",
     "output": {
         "path": __dirname + "/dist",
-        "filename": "bundle.js",
-    }
+        "filename": "simulation.js",
+    },
+    "watch": true
 }

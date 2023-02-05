@@ -4,7 +4,7 @@ import Simulation from "./Simulation";
 import Utility from "./lib/Utility";
 import KeyboardInput from "./KeyboardInput";
 import Food from "./Food";
-import Animal, { TraitEffectConstants } from "./Animal";
+import Animal from "./Animal";
 
 class Camera {
     static position: Vector2D = Vector2D.zero;
@@ -13,18 +13,30 @@ class Camera {
     static renderingFood: boolean = true;
     static renderingAnimals: boolean = true;
     static renderingBackground: boolean = true;
+    static targetFPS: number;
+    static interval: number| null = null;
     static zoom: number = 1;
     static cameraSpeed: number = 5;
+    static senseVisualization: boolean = false;
+    static animalNames: boolean = false;
+    static lastFrameTime: number;
+    static followTarget: Animal | null;
+    static lastTenFPS: number[] = [];
     static lastMouseData: {
         x: number | null
         y: number | null
     } = {} as typeof this.lastMouseData;
     static initialized: boolean = false;
 
-    static init(canvas: HTMLCanvasElement, targetFPS: number = 60) {
+    static get averageFPS(): number {
+        return this.lastTenFPS.reduce((a, b) => a + b, 0) / Math.max(1,this.lastTenFPS.length);
+    }
+
+    static init(canvas: HTMLCanvasElement, targetFPS: number = 30) {
+        if(!Simulation.initialized) throw new Error("Simulation not yet initialized");
         this.canvas2D = new Canvas2D(canvas);
 
-        setInterval(this.update.bind(this), 1000 / targetFPS)
+        this.interval = setInterval(this.update.bind(this), 1000 / targetFPS)
 
         window.addEventListener("resize", () => {
             this.canvas2D.updateDimensions();
@@ -32,10 +44,18 @@ class Camera {
 
         window.addEventListener("wheel", this.handleScroll.bind(this))
         window.addEventListener("mousemove", this.handleMouseDrag.bind(this))
+        window.addEventListener("mousedown", this.handleMouseMiddleClick.bind(this))
         window.addEventListener("mouseup", () => {
             this.lastMouseData = {} as typeof this.lastMouseData;
         })
 
+        this.targetFPS = targetFPS;
+    }
+
+    static changeTargetFPS(newTargetFPS:number){
+        clearInterval(this.interval);
+        this.targetFPS = newTargetFPS;
+        this.interval = setInterval(this.update.bind(this), 1000 / this.targetFPS)
     }
 
     static mouseCoordinatesToWorldCoordinates(mouseCoordinates: Vector2D) {
@@ -57,8 +77,25 @@ class Camera {
         this.zoom = Utility.clamp(this.zoom, 0.1, 10)
     }
 
+    static handleMouseMiddleClick(e: MouseEvent): void{
+        if(e.target != this.canvas2D.canvas || e.buttons != 4) return;
+        if(this.followTarget != null){
+            this.followTarget = null;
+            return;
+        }
+
+        const position = this.mouseCoordinatesToWorldCoordinates(new Vector2D(e.x, e.y))
+        
+        for(let animal of Simulation.animals){
+            if(Vector2D.getDistance(position,animal.position) <= Animal.radius){
+                this.followTarget = animal;
+                break; 
+            }
+        }
+    }
+
     static handleMouseDrag(e: MouseEvent) {
-        if (e.target != this.canvas2D.canvas || e.buttons == 0) return;
+        if (e.target != this.canvas2D.canvas || e.buttons == 0 || e.buttons == 4) return;
         e.preventDefault();
 
         if (this.lastMouseData.x == null || this.lastMouseData.y == null) {
@@ -88,6 +125,8 @@ class Camera {
 
     static update() {
 
+        if(!this.followTarget?.alive) this.followTarget = null;
+
         let speed = KeyboardInput.keys.ShiftLeft ? this.cameraSpeed : this.cameraSpeed * 3;
         let zoomSpeed = KeyboardInput.keys.ShiftLeft ? this.zoom/100 : this.zoom/20;
         speed /= this.zoom;
@@ -104,14 +143,18 @@ class Camera {
         if (KeyboardInput.keys.KeyD) {
             this.position.x += speed;
         }
+        if(this.followTarget != null){
+            this.position = this.followTarget.position.copy();
+        }
+        if(KeyboardInput.keys.Space) {
+            this.position = Vector2D.zero;
+        }
+        
         if(KeyboardInput.keys.Equal){
             this.zoom += zoomSpeed;
         }
         if(KeyboardInput.keys.Minus){
             this.zoom -= zoomSpeed;
-        }
-        if(KeyboardInput.keys.Space) {
-            this.position = Vector2D.zero;
         }
 
         this.zoom = Utility.clamp(this.zoom, 0.1, 10)
@@ -152,7 +195,7 @@ class Camera {
 
             if (Math.abs(position.x) - Animal.radius > this.canvas2D.width || Math.abs(position.y) - Animal.radius > this.canvas2D.height) continue;
             this.canvas2D.queueCircle(new Vector2D(Math.round(position.x),Math.round(position.y)), Animal.radius * this.zoom, 0, "grey")
-            if (this.senseVisualization) this.canvas2D.queueCircle(new Vector2D(Math.round(position.x),Math.round(position.y)), Math.sqrt(animal.traits.sense) * TraitEffectConstants.sense,1,"#FFFFFF03")
+            if (this.senseVisualization) this.canvas2D.queueCircle(new Vector2D(Math.round(position.x),Math.round(position.y)), animal.traits.sense * Animal.settings.TraitEffectConstants.sense * this.zoom,1,"#FFFFFF03")
             if (this.animalNames) this.canvas2D.queueText(new Vector2D(Math.round(position.x),Math.round(position.y + (Animal.radius + 3) * this.zoom)),animal.name,10 * this.zoom, 2)
         }
     }
@@ -162,8 +205,18 @@ class Camera {
         if(this.renderingAnimals)this.queueAnimals();
 
         if(this.renderingBackground)this.queueBackground();
+
         this.canvas2D.clear();
         this.canvas2D.draw();
+
+        if (this.lastFrameTime != null) {    
+            let deltaTime = 1000 / (Date.now() - this.lastFrameTime);
+            if(!isFinite(deltaTime)) deltaTime = 1000/this.targetFPS;        
+            this.lastTenFPS.push(deltaTime);
+            if (this.lastTenFPS.length >= 11) this.lastTenFPS.shift();
+        }
+
+        this.lastFrameTime = Date.now();
     }
 
     static project(coordinates: Vector2D) {

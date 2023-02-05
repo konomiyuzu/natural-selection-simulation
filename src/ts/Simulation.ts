@@ -2,12 +2,13 @@ import Animal, { AnimalTraits, baseAnimalTraits } from "./Animal"
 import Food from "./Food";
 import Vector2D from "./lib/Vector2D";
 
-interface SimulationSettings {
+export interface SimulationSettings {
     initialPopulation: number;
     worldRadius: number;
     mutationChance: number;
     mutationSeverity: number;
-    foodPerCycle: number;
+    foodPerFeedingCycle: number;
+    feedingCycleLength: number;
     maximumFood: number;
     collectData: boolean;
     dataCollectionFrequency: number;
@@ -17,6 +18,7 @@ interface SimulationData {
     time: SimulationTime;
     averageTraits: AnimalTraits;
     populationSize: number;
+    foodCount: number;
     simulationSettings: SimulationSettings;
 }
 
@@ -29,6 +31,7 @@ export class SimulationDataCollector {
         data.time = new SimulationTime(Simulation.simulationTime.totalTicks);
         data.averageTraits = Simulation.averageAnimalTraits;
         data.populationSize = Simulation.populationSize;
+        data.foodCount = Simulation.foodCount;
         data.simulationSettings = Object.assign({}, Simulation.settings);
 
         this.data.push(data);
@@ -188,17 +191,8 @@ class Simulation {
     static interval: number | null;
     static tps: number;
     static lastTenTPS: number[] = [];
-    static settings: SimulationSettings = {
-        initialPopulation: 20,
-        worldRadius: 350,
-        mutationChance: 1,
-        mutationSeverity: .1,
-        foodPerCycle: 300,
-        maximumFood: 3000,
-        collectData: true,
-        dataCollectionFrequency: 25
-    }
-
+    static initialized: boolean = false;
+    static settings: SimulationSettings;
     static get foodCount() {
         return this.foods.length;
     }
@@ -239,12 +233,18 @@ class Simulation {
         return averageAnimal;
     }
 
+    static init(settings: SimulationSettings){
+        if(this.initialized) throw new Error("Simulation already initialized");
+        this.settings = settings;
+        this.initialized = true;
+    }
+
     static setUpSimulation() {
         this.reset();
         this.addAnimal(this.settings.initialPopulation);
-        this.simulationTime.scheduleRepeating(this.nextCycle.bind(this), 100);
+        this.simulationTime.scheduleRepeating(this.feed.bind(this), this.settings.feedingCycleLength);
         if (this.settings.collectData) this.simulationTime.scheduleRepeating(SimulationDataCollector.collectData.bind(SimulationDataCollector), this.settings.dataCollectionFrequency);
-        this.addFood(this.settings.foodPerCycle);
+        this.addFood(this.settings.foodPerFeedingCycle);
     }
 
     static reset() {
@@ -331,8 +331,8 @@ class Simulation {
         this.interval = setInterval(this.tick.bind(this), 1000 / this.targetTPS);
     }
 
-    static nextCycle() {
-        this.addFood(this.settings.foodPerCycle);
+    static feed() {
+        this.addFood(this.settings.foodPerFeedingCycle);
     }
 }
 

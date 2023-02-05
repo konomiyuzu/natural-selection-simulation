@@ -20,12 +20,12 @@ export class Random {
         return Math.random() <= chance;
     }
 
-    static randomArryIndexFromArray(arr:Array<any>):number{
+    static randomArrayIndexFromArray(arr:Array<any>| readonly any[]):number{
         return this.randomInteger(0,arr.length - 1);
     }
 
-    static randomElementFromArray<type>(arr:Array<type>):type{
-        return arr[this.randomArryIndexFromArray(arr)];
+    static randomElementFromArray<type>(arr:Array<type>|readonly type[]):type{
+        return arr[this.randomArrayIndexFromArray(arr)];
     }
 }
 

@@ -1,24 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>simulation</title>
     <link rel="stylesheet" href="./css/simulation.css">
+    <link rel="icon" href="./assets/natural selection sim icon.ico">
 </head>
+
 <body>
-    <p id="tps" style="color:white;position: absolute"></p>
-    <p id="target" style="color:white;position: absolute;top:30px"></p>
-    <p id="cycle" style="color:white;position: absolute;top:60px"></p>
-    <p id="population" style="color:white;position: absolute;top:90px"></p>
-    <p id="average" style="color:white;position: absolute;top:120px"></p>
-    <div class="canvas-container">
-        <canvas class="canvas" id="canvas"></canvas>
+    <div class="components-container">
+
+        <div class="ux-container">
+            <p class="ux-component" id="tps">tps</p>
+            <p class="ux-component" id="fps">fps</p>
+            <p class="ux-component" id="populationSize">Population Size:</p>
+            <p class="ux-component" id="cycle">Cycle:</p>
+            <p class="ux-component" id="averageTraits">Average Traits:</p>
+            <button class="ux-component" id="newSimulationButton">New Simulation</button>
+            <button class="ux-component" id="startStopButton">Start Simulation</button>
+            <button class="ux-component" id="changeTargetTPS">change target tps</button>
+            <button class="ux-component" id="downloadDataButton">download data</button>
+            <div class="ux-component">
+                <input id="rendering" type="checkbox" checked>
+                <label>Rendering</label>
+            </div>
+            <div class="ux-component">
+                <input id="renderingFood" type="checkbox" checked>
+                <label>Show Food</label>
+            </div>
+            <div class="ux-component">
+                <input id="renderingAnimals" type="checkbox" checked>
+                <label>Show Animals</label>
+            </div>
+            <div class="ux-component">
+                <input id="senseVisualization" type="checkbox">
+                <label>Show Animal Sense Visualization</label>
+            </div>
+
+            <div class="ux-component settings-container">
+                <h3>Settings</h3>
+                <div>
+                    <label>World Radius</label>
+                    <input id="worldRadius" value="350">
+                </div>
+                <div>
+                    <label>Mutation Chance</label>
+                    <input id="mutationChance" value="1">
+                </div>
+                <div>
+                    <label>Mutation Severity</label>
+                    <input id="mutationSeverity" value=".1">
+                </div>
+                <div>
+                    <label>Initial Population</label>
+                    <input id="initialPopulation" value="20">
+                </div>
+                <div>
+                    <label>Animal Lifespan</label>
+                    <input id="animalMaximumAge" value="30">
+                </div>
+                <div>
+                    <label>Food per Feeding Cycle</label>
+                    <input id="foodPerFeedingCycle" value="300">
+                </div>
+                <div>
+                    <label>Feeding Cycle length</label>
+                    <input id="feedingCycleLength" value="1">
+                </div>
+                <div>
+                    <label>Maximum Food</label>
+                    <input id="maximumFood" value="1000">
+                </div>
+                <h5>advanced settings</h5>
+                <div>
+                    <label>Base Reproduction Cost</label>
+                    <input id="baseReprodutionCost" value="100">
+                </div>
+                <div>
+                    <label>Movement Cost Multiplier</label>
+                    <input id="movementCost" value=".1">
+                </div>
+                <div>
+                    <label>Sense Cost Multiplier</label>
+                    <input id="senseCost" value=".1">
+                </div>
+                <div>
+                    <label>Movement Multiplier</label>
+                    <input id="movementMultiplier" value="3">
+                </div>
+                <div>
+                    <label>Sense Multiplier</label>
+                    <input id="senseMultiplier" value="50">
+                </div>
+                <div>
+                    <label>Base Reproduction Energy Buffer</label>
+                    <input id="reprodutiveUrgeMultiplier" value="30">
+                </div>
+                <div>
+                    <label>Base Offspring Starting Energy</label>
+                    <input id="offspringInvestmentMultiplier" value="50">
+                </div>
+            </div>
+        </div>
+        <div class="canvas-container">
+            <canvas class="canvas" id="canvas"></canvas>
+        </div>
     </div>
 
-    <button id="downloadButton">download data</button>
 </body>
 
-<script src="dist/bundle.js"></script>
+<script src="dist/simulation.js"></script>
+
 </html>

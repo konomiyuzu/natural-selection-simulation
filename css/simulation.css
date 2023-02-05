@@ -1,4 +1,5 @@
 .canvas-container{
+    margin-top:10px;
     display:flex;
     justify-content: right;
     align-items: center;
@@ -8,9 +9,36 @@
     width:80vw;
     height:90vh;
     border:white solid 3px;
-    margin:10px;
+    background-color: #313131;
 }
 
 body{
     background-color: #313131;
+}
+
+.components-container{
+    display:flex;
+    justify-content: right;
+}
+
+.ux-container{
+    display:flex;
+    flex-flow: column;
+    color:white;
+    width: 100%;
+    margin-top: 10px;
+    margin-right: 5px;
+}
+
+.ux-component{
+    margin-top: 3px;
+}
+
+.settings-container{
+    display: flex;
+    flex-flow: column;
+    border: white solid 3px;
+    overflow-y: scroll;
+    height: 325px;
+    padding: 5px;
 }
