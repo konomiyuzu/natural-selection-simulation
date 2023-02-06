@@ -52,6 +52,12 @@ class Camera {
         this.targetFPS = targetFPS;
     }
 
+    static reset():void{
+        this.position = Vector2D.zero;
+        this.zoom = 1;
+        this.followTarget = null;
+    }
+
     static changeTargetFPS(newTargetFPS:number){
         clearInterval(this.interval);
         this.targetFPS = newTargetFPS;

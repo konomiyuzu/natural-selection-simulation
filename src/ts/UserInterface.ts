@@ -110,8 +110,7 @@ class UserInterface {
                     onclickFunction = () => {
                         if (Simulation.simulating) Simulation.pauseSimulation();
                         Simulation.setUpSimulation();
-                        Camera.position = Vector2D.zero;
-                        Camera.zoom = 1;
+                        Camera.reset();
                     }
                     break;
                 case "startStopButton":
