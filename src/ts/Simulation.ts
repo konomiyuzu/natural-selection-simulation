@@ -189,6 +189,7 @@ class Simulation {
     static targetTPS: number = 60;
     static lastTickTime: number;
     static interval: number | null;
+    static feedingScheduleId: number;
     static tps: number;
     static lastTenTPS: number[] = [];
     static initialized: boolean = false;
@@ -239,10 +240,15 @@ class Simulation {
         this.initialized = true;
     }
 
+    static updateFeedingCycleLength():void{
+        if(this.feedingScheduleId != null) this.simulationTime.clearSchedule(this.feedingScheduleId);
+        this.feedingScheduleId = this.simulationTime.scheduleRepeating(this.feed.bind(this), this.settings.feedingCycleLength);
+    }
+
     static setUpSimulation() {
         this.reset();
         this.addAnimal(this.settings.initialPopulation);
-        this.simulationTime.scheduleRepeating(this.feed.bind(this), this.settings.feedingCycleLength);
+        this.feedingScheduleId = this.simulationTime.scheduleRepeating(this.feed.bind(this), this.settings.feedingCycleLength);
         if (this.settings.collectData) this.simulationTime.scheduleRepeating(SimulationDataCollector.collectData.bind(SimulationDataCollector), this.settings.dataCollectionFrequency);
         this.addFood(this.settings.foodPerFeedingCycle);
     }

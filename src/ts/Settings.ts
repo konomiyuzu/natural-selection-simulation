@@ -1,5 +1,5 @@
 import Animal, { AnimalSettings } from "./Animal";
-import { SimulationSettings } from "./Simulation";
+import Simulation, { SimulationSettings } from "./Simulation";
 
 class Settings{
     static simulationSettings: SimulationSettings;
@@ -16,6 +16,7 @@ class Settings{
 
     static changeSimulationSettings(newSettings:Partial<SimulationSettings>){
         this.simulationSettings = Object.assign(this.simulationSettings, newSettings)
+        Simulation.updateFeedingCycleLength();
     }
 
     

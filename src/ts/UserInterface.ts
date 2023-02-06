@@ -239,7 +239,7 @@ class UserInterface {
                     onchangeFunction = () => {
                         if (!Utility.stringIsNumber(element.value) || parseFloat(element.value) <= 0) {
                             alert("invalid input\nmaximum age must be a number > 0");
-                            element.value = Settings.animalSettings.maximumAge;
+                            element.value = Settings.animalSettings.maximumAge / 100;
                             return;
                         }
 
@@ -261,11 +261,12 @@ class UserInterface {
                     onchangeFunction = () => {
                         if (!Utility.stringIsNumber(element.value) || parseFloat(element.value) <= 0) {
                             alert("invalid input\nfeeding cycle length must be a number > 0");
-                            element.value = Settings.simulationSettings.feedingCycleLength;
+                            element.value = Settings.simulationSettings.feedingCycleLength / 100;
                             return;
                         }
 
                         Settings.simulationSettings.feedingCycleLength = parseFloat(element.value) * 100 //same deal as age
+                        Simulation.updateFeedingCycleLength();
                     }
                     break;
                 case "maximumFood":
