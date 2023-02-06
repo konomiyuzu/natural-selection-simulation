@@ -50,6 +50,7 @@ Settings.init(
 
 Simulation.init(Settings.simulationSettings);
 Animal.init(Settings.animalSettings);
+Simulation.setUpSimulation(); //so that there is already a simulation at first
 
 Camera.init(document.getElementById("canvas") as HTMLCanvasElement);
 
