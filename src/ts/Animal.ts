@@ -8,7 +8,7 @@ import Simulation, { SimulationTime } from "./Simulation";
 export interface AnimalTraits{
     speed: number;
     sense: number;
-    reproductiveUrge: number;
+    reproductiveBuffer: number;
     offspringInvestment: number;
 }
 
@@ -27,7 +27,7 @@ export interface AnimalSettings{
 export const baseAnimalTraits: AnimalTraits = {
     speed:1,
     sense:1,
-    reproductiveUrge:1,
+    reproductiveBuffer:1,
     offspringInvestment:1,
 }
 
@@ -52,7 +52,7 @@ export const AnimalTraitsClampValues:{
 } = {
     speed:{min:0.0001,max:Infinity},
     sense:{min:0.0001,max:Infinity},
-    reproductiveUrge:{min:0.0001,max:Infinity},
+    reproductiveBuffer:{min:0.0001,max:Infinity},
     offspringInvestment:{min:0.0001,max:Infinity}
 };
 
@@ -79,11 +79,19 @@ export class Animal {
     }
 
     get reproductionCost(): number{
-        return Animal.settings.EnergyCostConstants.baseReproductionCost + (this.traits.offspringInvestment * Animal.settings.TraitEffectConstants.offspringInvestment)
+        return Animal.settings.EnergyCostConstants.baseReproductionCost + this.offspringStartingEnergy
+    }
+
+    get offspringStartingEnergy(): number{
+        return this.traits.offspringInvestment * Animal.settings.TraitEffectConstants.offspringInvestment
     }
 
     get energyRequiredForReproductionAttempt(): number{
-        return this.reproductionCost + ((1/this.traits.reproductiveUrge) * Animal.settings.TraitEffectConstants.reproductiveUrge);
+        return this.reproductionCost + this.reproductionBuffer;
+    }
+
+    get reproductionBuffer(): number{
+        return (this.traits.reproductiveBuffer) * Animal.settings.TraitEffectConstants.reproductiveBuffer;
     }
 
     get energyCostPerDay(): number{
@@ -276,7 +284,7 @@ export class Animal {
             if(Random.randomChance(Simulation.settings.mutationChance)) traitValue += Random.randomFloat(-serverity,serverity)
             traits[trait] = Utility.clamp(traitValue,AnimalTraitsClampValues[trait].min,AnimalTraitsClampValues[trait].max);
         }
-        return new Animal(position,this.traits.offspringInvestment * Animal.settings.TraitEffectConstants.offspringInvestment, traits, this.generation + 1)
+        return new Animal(position,this.offspringStartingEnergy, traits, this.generation + 1)
     }
 
     update(): void {
@@ -340,8 +348,8 @@ export class Animal {
         this.position = position;
         this.energy = startingEnergy;
         this.traits = traits;
-        this.currentAction = AnimalActions.decidingOnAction;
-
+        this.currentAction = AnimalActions.wandering;
+        this.age.schedule((()=>{this.currentAction = AnimalActions.decidingOnAction}).bind(this),10)
         this.age.schedule((() => {this.die(AnimalDeathTypes.oldAge)}).bind(this), Animal.settings.maximumAge);
         this.name = Random.randomElementFromArray(AnimalNames);
         this.generation = generation;
