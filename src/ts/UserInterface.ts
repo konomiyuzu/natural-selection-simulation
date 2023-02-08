@@ -108,6 +108,8 @@ class UserInterface {
             switch (elementId) {
                 case "newSimulationButton":
                     onclickFunction = () => {
+                        const confirmation = confirm("are you sure you want to start a new simulation?\nthis will delete any collected data")
+                        if(!confirmation) return;
                         if (Simulation.simulating) Simulation.pauseSimulation();
                         Simulation.setUpSimulation();
                         Camera.reset();
