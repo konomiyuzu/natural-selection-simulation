@@ -18,6 +18,7 @@ class UserInterface {
         startStopButton: HTMLButtonElement;
         changeTargetTPS: HTMLButtonElement;
         downloadDataButton: HTMLButtonElement;
+        resetSettingsToDefault: HTMLButtonElement;
     }
     static checkboxElements: {
         renderingButton: HTMLInputElement;
@@ -35,12 +36,13 @@ class UserInterface {
         foodPerFeedingCycle: HTMLInputElement;
         feedingCycleLength: HTMLInputElement;
         maximumFood: HTMLInputElement;
+        foodEnergyValue: HTMLInputElement;
         baseReprodutionCost: HTMLInputElement;
         movementCost: HTMLInputElement;
         senseCost: HTMLInputElement;
         movementMultiplier: HTMLInputElement;
         senseMultiplier: HTMLInputElement;
-        reprodutiveUrgeMultiplier: HTMLInputElement;
+        reprodutiveBufferMultiplier: HTMLInputElement;
         offspringInvestmentMultiplier: HTMLInputElement;
     }
 
@@ -63,6 +65,12 @@ class UserInterface {
     }
 
     static update(): void {
+        this.updateTextElements();
+        this.buttonElements.startStopButton.innerHTML = Simulation.simulating ? "Pause Simulation" : "Start Simulation";
+        this.updateSettingsText();
+    }
+
+    static updateTextElements():void{
         for (const elementId in this.textElements) {
             const element = this.textElements[elementId];
             let text: string;
@@ -96,8 +104,69 @@ class UserInterface {
             }
             element.innerHTML = text;
         }
+    }
 
-        this.buttonElements.startStopButton.innerHTML = Simulation.simulating ? "Pause Simulation" : "Start Simulation";
+    static updateSettingsText():void{
+        for (const elementId in this.settingsElements) {
+            const element = this.settingsElements[elementId];
+            //so that this doesnt stop the user from typing
+            if(element === document.activeElement) continue;
+            let text: string;
+
+            switch (elementId) {
+                case "worldRadius":
+                    text = Settings.simulationSettings.worldRadius.toString()
+                    break;
+                case "mutationChance":
+                    text = Settings.simulationSettings.mutationChance.toString()
+                    break;
+                case "mutationSeverity":
+                    text = Settings.simulationSettings.mutationSeverity.toString()
+                    break;
+                case "initialPopulation":
+                    text = Settings.simulationSettings.initialPopulation.toString()
+                    break;
+                case "animalMaximumAge":
+                    //its in cycles instead of ticks
+                    text = (Settings.animalSettings.maximumAge/100).toString()
+                    break;
+                case "foodPerFeedingCycle":
+                    text = Settings.simulationSettings.foodPerFeedingCycle.toString()
+                    break;
+                case "feedingCycleLength":
+                    //its in cycles instead of ticks
+                    text = (Settings.simulationSettings.feedingCycleLength/100).toString()
+                    break;
+                case "maximumFood":
+                    text = Settings.simulationSettings.maximumFood.toString()
+                    break;
+                case "foodEnergyValue":
+                    text = Settings.simulationSettings.foodEnergyValue.toString()
+                    break;
+                case "baseReprodutionCost":
+                    text = Settings.animalSettings.EnergyCostConstants.baseReproductionCost.toString()
+                    break;
+                case "movementCost":
+                    text = Settings.animalSettings.EnergyCostConstants.speed.toString()
+                    break;
+                case "senseCost":
+                    text = Settings.animalSettings.EnergyCostConstants.sense.toString()
+                    break;
+                case "movementMultiplier":
+                    text = Settings.animalSettings.TraitEffectConstants.speed.toString()
+                    break;
+                case "senseMultiplier":
+                    text = Settings.animalSettings.TraitEffectConstants.sense.toString()
+                    break;
+                case "reprodutiveBufferMultiplier":
+                    text = Settings.animalSettings.TraitEffectConstants.reproductiveBuffer.toString()
+                    break;
+                case "offspringInvestmentMultiplier":
+                    text = Settings.animalSettings.TraitEffectConstants.offspringInvestment.toString()
+                    break;
+            }
+            element.value = text;
+        }
     }
 
     static setUpButtonElements() {
@@ -109,7 +178,7 @@ class UserInterface {
                 case "newSimulationButton":
                     onclickFunction = () => {
                         const confirmation = confirm("are you sure you want to start a new simulation?\nthis will delete any collected data")
-                        if(!confirmation) return;
+                        if (!confirmation) return;
                         if (Simulation.simulating) Simulation.pauseSimulation();
                         Simulation.setUpSimulation();
                         Camera.reset();
@@ -142,7 +211,12 @@ class UserInterface {
                 case "downloadDataButton":
                     onclickFunction = SimulationDataCollector.downloadData.bind(SimulationDataCollector);
                     break;
-
+                case "resetSettingsToDefault":
+                    onclickFunction = () => {
+                        if (!confirm("are you sure you want to reset settings to default")) return;
+                        Settings.resetToDefaultSettings();
+                    }
+                    break;
                 default:
                     onclickFunction = () => alert("not yet implemented")
                     break;
@@ -268,7 +342,7 @@ class UserInterface {
                         }
 
                         Settings.simulationSettings.feedingCycleLength = parseFloat(element.value) * 100 //same deal as age
-                        Simulation.updateFeedingCycleLength();
+                        Simulation.updateFeedingCycleLength(); //so that it feels responsive
                     }
                     break;
                 case "maximumFood":
@@ -282,41 +356,96 @@ class UserInterface {
                         Settings.simulationSettings.maximumFood = parseInt(element.value)
                     }
                     break;
+                case "foodEnergyValue":
+                    onchangeFunction = () => {
+                        if (!Utility.stringIsNumber(element.value) || parseInt(element.value) < 0) {
+                            alert("invalid input\nfood energy value must be an integer >= 0");
+                            element.value = Settings.simulationSettings.foodEnergyValue;
+                            return;
+                        }
+
+                        Settings.simulationSettings.foodEnergyValue = parseInt(element.value)
+                    }
+                    break;
                 case "baseReprodutionCost":
                     onchangeFunction = () => {
-                        alert("to be implemented")
+                        if (!Utility.stringIsNumber(element.value) || parseFloat(element.value) < 0) {
+                            alert("invalid input\nbase reproduction cost must be a number >= 0");
+                            element.value = Settings.animalSettings.EnergyCostConstants.baseReproductionCost;
+                            return;
+                        }
+
+                        Settings.animalSettings.EnergyCostConstants.baseReproductionCost = parseFloat(element.value)
                     }
                     break;
                 case "movementCost":
                     onchangeFunction = () => {
-                        alert("to be implemented")
+                        if (!Utility.stringIsNumber(element.value) || parseFloat(element.value) < 0) {
+                            alert("invalid input\nmovement cost must be a number >= 0");
+                            element.value = Settings.animalSettings.EnergyCostConstants.speed;
+                            return;
+                        }
+
+                        Settings.animalSettings.EnergyCostConstants.speed = parseFloat(element.value)
                     }
                     break;
                 case "senseCost":
                     onchangeFunction = () => {
-                        alert("to be implemented")
+                        if (!Utility.stringIsNumber(element.value) || parseFloat(element.value) < 0) {
+                            alert("invalid input\nsense cost must be a number >= 0");
+                            element.value = Settings.animalSettings.EnergyCostConstants.sense;
+                            return;
+                        }
+
+                        Settings.animalSettings.EnergyCostConstants.sense = parseFloat(element.value)
                     }
                     break;
                 case "movementMultiplier":
                     onchangeFunction = () => {
-                        alert("to be implemented")
+                        if (!Utility.stringIsNumber(element.value) || parseFloat(element.value) < 0) {
+                            alert("invalid input\nmovement multiplier must be a number >= 0");
+                            element.value = Settings.animalSettings.TraitEffectConstants.speed;
+                            return;
+                        }
+
+                        Settings.animalSettings.TraitEffectConstants.speed = parseFloat(element.value)
                     }
                     break;
                 case "senseMultiplier":
                     onchangeFunction = () => {
-                        alert("to be implemented")
+                        if (!Utility.stringIsNumber(element.value) || parseFloat(element.value) < 0) {
+                            alert("invalid input\nsense multiplier must be a number >= 0");
+                            element.value = Settings.animalSettings.TraitEffectConstants.sense;
+                            return;
+                        }
+
+                        Settings.animalSettings.TraitEffectConstants.sense = parseFloat(element.value)
                     }
                     break;
-                case "reprodutiveUrgeMultiplier":
+                case "reprodutiveBufferMultiplier":
                     onchangeFunction = () => {
-                        alert("to be implemented")
+                        if (!Utility.stringIsNumber(element.value) || parseFloat(element.value) < 0) {
+                            alert("invalid input\nreproductive buffer multiplier must be a number >= 0");
+                            element.value = Settings.animalSettings.TraitEffectConstants.reproductiveBuffer;
+                            return;
+                        }
+
+                        Settings.animalSettings.TraitEffectConstants.reproductiveBuffer = parseFloat(element.value)
                     }
                     break;
                 case "offspringInvestmentMultiplier":
                     onchangeFunction = () => {
-                        alert("to be implemented")
+                        if (!Utility.stringIsNumber(element.value) || parseFloat(element.value) < 0) {
+                            alert("invalid input\noffspring investment multiplier must be a number >= 0");
+                            element.value = Settings.animalSettings.TraitEffectConstants.offspringInvestment;
+                            return;
+                        }
+
+                        Settings.animalSettings.TraitEffectConstants.offspringInvestment = parseFloat(element.value)
                     }
                     break;
+                default:
+                    onchangeFunction = () => { alert("to be implemented") }
             }
 
             element.onchange = onchangeFunction;

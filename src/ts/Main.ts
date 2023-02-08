@@ -1,5 +1,6 @@
 import Animal from "./Animal";
 import Camera from "./Camera";
+import Random from "./lib/Random";
 import Utility from "./lib/Utility";
 import Vector2D from "./lib/Vector2D";
 import Settings from "./Settings";
@@ -11,6 +12,8 @@ import UserInterface from "./UserInterface";
 window.Vector2D = Vector2D;
 //@ts-ignore
 window.Simulation = Simulation;
+//@ts-ignore
+window.Random = Random;
 //@ts-ignore
 window.Camera = Camera;
 //@ts-ignore
@@ -70,6 +73,7 @@ buttonElements.newSimulationButton = document.getElementById("newSimulationButto
 buttonElements.startStopButton = document.getElementById("startStopButton") as HTMLButtonElement;
 buttonElements.changeTargetTPS = document.getElementById("changeTargetTPS") as HTMLButtonElement;
 buttonElements.downloadDataButton = document.getElementById("downloadDataButton") as HTMLButtonElement;
+buttonElements.resetSettingsToDefault = document.getElementById("resetSettingsToDefault") as HTMLButtonElement;
 
 const checkboxElements = {} as typeof UserInterface.checkboxElements;
 checkboxElements.renderingButton = document.getElementById("rendering") as HTMLInputElement;
@@ -87,12 +91,14 @@ settingsElements.animalMaximumAge = document.getElementById("animalMaximumAge") 
 settingsElements.foodPerFeedingCycle = document.getElementById("foodPerFeedingCycle") as HTMLInputElement;
 settingsElements.feedingCycleLength = document.getElementById("feedingCycleLength") as HTMLInputElement;
 settingsElements.maximumFood = document.getElementById("maximumFood") as HTMLInputElement;
+settingsElements.foodEnergyValue = document.getElementById("foodEnergyValue") as HTMLInputElement;
+
 settingsElements.baseReprodutionCost = document.getElementById("baseReprodutionCost") as HTMLInputElement;
 settingsElements.movementCost = document.getElementById("movementCost") as HTMLInputElement;
 settingsElements.senseCost = document.getElementById("senseCost") as HTMLInputElement;
 settingsElements.movementMultiplier = document.getElementById("movementMultiplier") as HTMLInputElement;
 settingsElements.senseMultiplier = document.getElementById("senseMultiplier") as HTMLInputElement;
-settingsElements.reprodutiveUrgeMultiplier = document.getElementById("reprodutiveUrgeMultiplier") as HTMLInputElement;
+settingsElements.reprodutiveBufferMultiplier = document.getElementById("reprodutiveBufferMultiplier") as HTMLInputElement;
 settingsElements.offspringInvestmentMultiplier = document.getElementById("offspringInvestmentMultiplier") as HTMLInputElement;
 
 

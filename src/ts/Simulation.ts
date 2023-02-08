@@ -168,6 +168,10 @@ export class SimulationTime {
         return id;
     }
 
+    getScheduleById(id:number): SimulationTimeSchedule | null{
+        return this.scheduled[id];
+    }
+
     clearSchedule(id: number): void {
         for (let i = 0; i < this.scheduled.length; i++) {
             const schedule = this.scheduled[i];
@@ -352,6 +356,9 @@ class Simulation {
 
     static feed() {
         this.addFood(this.settings.foodPerFeedingCycle);
+
+        //check if the interval needs to be changed
+        if(this.settings.feedingCycleLength != this.simulationTime.getScheduleById(this.feedingScheduleId).scheduleInterval) this.updateFeedingCycleLength();
     }
 }
 

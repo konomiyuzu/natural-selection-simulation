@@ -23,6 +23,7 @@
             <button class="ux-component" id="startStopButton">Start Simulation</button>
             <button class="ux-component" id="changeTargetTPS">change target tps</button>
             <button class="ux-component" id="downloadDataButton">download data</button>
+            <button class="ux-component" id="resetSettingsToDefault">reset settings to default</button>
             <div class="ux-component">
                 <input id="rendering" type="checkbox" checked>
                 <label>Rendering</label>
@@ -74,6 +75,10 @@
                     <label>Maximum Food</label>
                     <input id="maximumFood" value="1000">
                 </div>
+                <div>
+                    <label>Food Energy Value</label>
+                    <input id="foodEnergyValue" value="1000">
+                </div>
                 <h5>advanced settings</h5>
                 <div>
                     <label>Base Reproduction Cost</label>
@@ -97,7 +102,7 @@
                 </div>
                 <div>
                     <label>Base Reproduction Energy Buffer</label>
-                    <input id="reprodutiveUrgeMultiplier" value="30">
+                    <input id="reprodutiveBufferMultiplier" value="30">
                 </div>
                 <div>
                     <label>Base Offspring Starting Energy</label>
