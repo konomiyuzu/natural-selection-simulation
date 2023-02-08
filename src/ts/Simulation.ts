@@ -12,6 +12,7 @@ export interface SimulationSettings {
     maximumFood: number;
     collectData: boolean;
     dataCollectionFrequency: number;
+    foodEnergyValue: number;
 }
 
 interface SimulationData {
@@ -39,11 +40,13 @@ export class SimulationDataCollector {
     }
 
     static downloadData(): void {
+        const filename = prompt("file name", "data")
+        if(filename == null) return;
+        
         const dataURL = "data:text/plain;charset=utf-8," + encodeURIComponent(JSON.stringify(this.data));
-
         let element = document.createElement("a");
         element.setAttribute("href", dataURL);
-        element.setAttribute("download", "data.json");
+        element.setAttribute("download", filename+".json");
 
         element.style.display = "none";
 
@@ -168,6 +171,7 @@ export class SimulationTime {
     clearSchedule(id: number): void {
         for (let i = 0; i < this.scheduled.length; i++) {
             const schedule = this.scheduled[i];
+            if(schedule == null) continue;
             if (schedule.id == id) {
                 this.scheduled[i] = null;
                 return;
@@ -228,9 +232,17 @@ class Simulation {
 
         let averageAge = this.animals.map(animal => animal.age.totalTicks)
             .reduce((a, b) => a + b, 0) / this.animals.length;
+        
+        let averageGeneration = this.animals.map(animal => animal.generation)
+        .reduce((a,b)=> a+b,0) / this.animals.length;
 
-        let averageAnimal = new Animal(averagePosition, averageEnergy, this.averageAnimalTraits, 0)
+        let averageOffspringCount = this.animals.map(animal => animal.offspringCount)
+        .reduce((a,b)=> a+b,0) / this.animals.length;
+        
+
+        let averageAnimal = new Animal(averagePosition, averageEnergy, this.averageAnimalTraits, Math.round(averageGeneration))
         averageAnimal.age = new SimulationTime(Math.round(averageAge));
+        averageAnimal.offspringCount = Math.round(averageOffspringCount);
         return averageAnimal;
     }
 
@@ -258,6 +270,7 @@ class Simulation {
         this.foods = [];
         this.simulationTime.reset();
         this.simulationTime.clearAllSchedules();
+        SimulationDataCollector.data = [];
     }
 
     static get averageTPS(): number {
@@ -288,7 +301,7 @@ class Simulation {
 
     static addFood(amount) {
         for (let i = 0; i < amount; i++) {
-            let food = new Food(this.getRandomPositionInWorld(), 20)
+            let food = new Food(this.getRandomPositionInWorld(),this.settings.foodEnergyValue)
             this.foods.push(food)
             if (this.foods.length >= this.settings.maximumFood) break;
         }

@@ -4,7 +4,7 @@ class Utility{
     }
 
     static stringIsNumber(string:string): boolean{
-        return !/(?!^-|\d+|\.)./g.test(string);
+        return !/(?!^-(\d+|\.)|\d+|\.)./g.test(string);
     }
 }
 

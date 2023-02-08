@@ -17,6 +17,8 @@ window.Camera = Camera;
 window.SimulationDataCollector = SimulationDataCollector;
 //@ts-ignore
 window.Settings = Settings;
+//@ts-ignore
+window.Utility = Utility;
 
 //default values that i will hardcode
 Settings.init(
@@ -27,16 +29,17 @@ Settings.init(
         mutationSeverity: .1,
         foodPerFeedingCycle: 300,
         feedingCycleLength: 100,
-        maximumFood: 3000,
+        maximumFood: 1000,
         collectData: true,
-        dataCollectionFrequency: 25
+        dataCollectionFrequency: 25,
+        foodEnergyValue:20
     }
     ,
     {
         TraitEffectConstants: {
             speed: 3,
             sense: 50,
-            reproductiveUrge: 30,
+            reproductiveBuffer: 30,
             offspringInvestment: 50
         },
         EnergyCostConstants: {
