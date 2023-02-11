@@ -13,14 +13,17 @@ export interface SimulationSettings {
     collectData: boolean;
     dataCollectionFrequency: number;
     foodEnergyValue: number;
+    collectVerboseData: boolean;
 }
 
-interface SimulationData {
+export interface SimulationData {
     time: SimulationTime;
     averageTraits: AnimalTraits;
     populationSize: number;
     foodCount: number;
-    simulationSettings: SimulationSettings;
+    simulationSettings?: SimulationSettings;
+    allAnimalTraits?: AnimalTraits[];
+    averageAnimal?: Animal;
 }
 
 export class SimulationDataCollector {
@@ -33,7 +36,12 @@ export class SimulationDataCollector {
         data.averageTraits = Simulation.averageAnimalTraits;
         data.populationSize = Simulation.populationSize;
         data.foodCount = Simulation.foodCount;
-        data.simulationSettings = Object.assign({}, Simulation.settings);
+
+        if (Simulation.settings.collectVerboseData) {
+            data.allAnimalTraits = Simulation.animals.map(x => x.traits);
+            data.averageAnimal = Simulation.averageAnimal;
+            data.simulationSettings = Object.assign({}, Simulation.settings);
+        }
 
         this.data.push(data);
         return data;
@@ -41,12 +49,12 @@ export class SimulationDataCollector {
 
     static downloadData(): void {
         const filename = prompt("file name", "data")
-        if(filename == null) return;
-        
+        if (filename == null) return;
+
         const dataURL = "data:text/plain;charset=utf-8," + encodeURIComponent(JSON.stringify(this.data));
         let element = document.createElement("a");
         element.setAttribute("href", dataURL);
-        element.setAttribute("download", filename+".json");
+        element.setAttribute("download", filename + ".json");
 
         element.style.display = "none";
 
@@ -168,14 +176,14 @@ export class SimulationTime {
         return id;
     }
 
-    getScheduleById(id:number): SimulationTimeSchedule | null{
+    getScheduleById(id: number): SimulationTimeSchedule | null {
         return this.scheduled[id];
     }
 
     clearSchedule(id: number): void {
         for (let i = 0; i < this.scheduled.length; i++) {
             const schedule = this.scheduled[i];
-            if(schedule == null) continue;
+            if (schedule == null) continue;
             if (schedule.id == id) {
                 this.scheduled[i] = null;
                 return;
@@ -236,13 +244,13 @@ class Simulation {
 
         let averageAge = this.animals.map(animal => animal.age.totalTicks)
             .reduce((a, b) => a + b, 0) / this.animals.length;
-        
+
         let averageGeneration = this.animals.map(animal => animal.generation)
-        .reduce((a,b)=> a+b,0) / this.animals.length;
+            .reduce((a, b) => a + b, 0) / this.animals.length;
 
         let averageOffspringCount = this.animals.map(animal => animal.offspringCount)
-        .reduce((a,b)=> a+b,0) / this.animals.length;
-        
+            .reduce((a, b) => a + b, 0) / this.animals.length;
+
 
         let averageAnimal = new Animal(averagePosition, averageEnergy, this.averageAnimalTraits, Math.round(averageGeneration))
         averageAnimal.age = new SimulationTime(Math.round(averageAge));
@@ -250,14 +258,14 @@ class Simulation {
         return averageAnimal;
     }
 
-    static init(settings: SimulationSettings){
-        if(this.initialized) throw new Error("Simulation already initialized");
+    static init(settings: SimulationSettings) {
+        if (this.initialized) throw new Error("Simulation already initialized");
         this.settings = settings;
         this.initialized = true;
     }
 
-    static updateFeedingCycleLength():void{
-        if(this.feedingScheduleId != null) this.simulationTime.clearSchedule(this.feedingScheduleId);
+    static updateFeedingCycleLength(): void {
+        if (this.feedingScheduleId != null) this.simulationTime.clearSchedule(this.feedingScheduleId);
         this.feedingScheduleId = this.simulationTime.scheduleRepeating(this.feed.bind(this), this.settings.feedingCycleLength);
     }
 
@@ -267,6 +275,7 @@ class Simulation {
         this.feedingScheduleId = this.simulationTime.scheduleRepeating(this.feed.bind(this), this.settings.feedingCycleLength);
         if (this.settings.collectData) this.simulationTime.scheduleRepeating(SimulationDataCollector.collectData.bind(SimulationDataCollector), this.settings.dataCollectionFrequency);
         this.addFood(this.settings.foodPerFeedingCycle);
+        SimulationDataCollector.collectData();
     }
 
     static reset() {
@@ -305,7 +314,7 @@ class Simulation {
 
     static addFood(amount) {
         for (let i = 0; i < amount; i++) {
-            let food = new Food(this.getRandomPositionInWorld(),this.settings.foodEnergyValue)
+            let food = new Food(this.getRandomPositionInWorld(), this.settings.foodEnergyValue)
             this.foods.push(food)
             if (this.foods.length >= this.settings.maximumFood) break;
         }
@@ -358,7 +367,7 @@ class Simulation {
         this.addFood(this.settings.foodPerFeedingCycle);
 
         //check if the interval needs to be changed
-        if(this.settings.feedingCycleLength != this.simulationTime.getScheduleById(this.feedingScheduleId).scheduleInterval) this.updateFeedingCycleLength();
+        if (this.settings.feedingCycleLength != this.simulationTime.getScheduleById(this.feedingScheduleId).scheduleInterval) this.updateFeedingCycleLength();
     }
 }
 

@@ -1,9 +1,11 @@
 module.exports = {
     "mode": "development",
-    "entry": "./src/js/Main.js",
+    "entry": {
+        simulation: "./src/js/Main.js",
+        graphing: "./src/js/GraphingMain.js"
+    },
     "output": {
         "path": __dirname + "/dist",
-        "filename": "simulation.js",
     },
-    "watch": true
+    "watch": true,
 }

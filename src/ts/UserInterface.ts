@@ -19,6 +19,7 @@ class UserInterface {
         changeTargetTPS: HTMLButtonElement;
         downloadDataButton: HTMLButtonElement;
         resetSettingsToDefault: HTMLButtonElement;
+        goToGraph: HTMLButtonElement;
     }
     static checkboxElements: {
         renderingButton: HTMLInputElement;
@@ -215,6 +216,12 @@ class UserInterface {
                     onclickFunction = () => {
                         if (!confirm("are you sure you want to reset settings to default")) return;
                         Settings.resetToDefaultSettings();
+                    }
+                    break;
+                case "goToGraph":
+                    onclickFunction = () => {
+                        sessionStorage.setItem("data", JSON.stringify(SimulationDataCollector.data));
+                        open("./graph.html", "_blank")
                     }
                     break;
                 default:

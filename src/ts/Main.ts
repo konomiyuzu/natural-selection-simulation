@@ -35,7 +35,8 @@ Settings.init(
         maximumFood: 1000,
         collectData: true,
         dataCollectionFrequency: 25,
-        foodEnergyValue:20
+        foodEnergyValue:20,
+        collectVerboseData:false
     }
     ,
     {
@@ -74,6 +75,7 @@ buttonElements.startStopButton = document.getElementById("startStopButton") as H
 buttonElements.changeTargetTPS = document.getElementById("changeTargetTPS") as HTMLButtonElement;
 buttonElements.downloadDataButton = document.getElementById("downloadDataButton") as HTMLButtonElement;
 buttonElements.resetSettingsToDefault = document.getElementById("resetSettingsToDefault") as HTMLButtonElement;
+buttonElements.goToGraph = document.getElementById("goToGraph") as HTMLButtonElement;
 
 const checkboxElements = {} as typeof UserInterface.checkboxElements;
 checkboxElements.renderingButton = document.getElementById("rendering") as HTMLInputElement;

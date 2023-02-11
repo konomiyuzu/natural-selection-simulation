@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>graph</title>
+    <link rel="stylesheet" href="./css/main.css">
+    <link rel="icon" href="./assets/natural selection sim icon.ico">
+</head>
+
+<body>
+    <div class="components-container">
+
+        <div class="ux-container">
+            <button class="ux-component" id="graph">Draw Graph</button>
+            <br>
+            <select class="ux-component" id="mode">
+                <option value="averageTraitsOverTime">Average traits over time</option>
+                <option value="populationOverTime">Population over time</option>
+                <option value="populationAndFoodOverTime">Population and food over time</option>
+            </select>
+            <label>graphing mode</label>
+            <select class="ux-component" id="source">
+                <option value="lastSimulation">last Simulation</option>
+                <option value="file">file</option>
+            </select>
+            <label>data source</label>
+            
+            <input type="file" id="dataFile">
+        </div>
+        <div class="canvas-container">
+            <canvas class="canvas" id="chart"></canvas>
+        </div>
+    </div>
+
+</body>
+
+<script src="dist/graphing.js"></script>
+</html>
