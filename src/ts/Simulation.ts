@@ -322,7 +322,7 @@ class Simulation {
 
     static addAnimal(amount) {
         for (let i = 0; i < amount; i++) {
-            let animal = new Animal(this.getRandomPositionInWorld(), 100, baseAnimalTraits, 0)
+            let animal = new Animal(this.getRandomPositionInWorld(), 100, Object.assign({},baseAnimalTraits), 0)
             this.animals.push(animal)
         }
     }
