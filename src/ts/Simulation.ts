@@ -314,9 +314,9 @@ class Simulation {
 
     static addFood(amount) {
         for (let i = 0; i < amount; i++) {
+            if (this.foods.length >= this.settings.maximumFood) break;
             let food = new Food(this.getRandomPositionInWorld(), this.settings.foodEnergyValue)
             this.foods.push(food)
-            if (this.foods.length >= this.settings.maximumFood) break;
         }
     }
 
