@@ -74,6 +74,11 @@ export class Animal {
     } = {} as typeof this.memory;
     offspringCount: number = 0;
     generation: number;
+
+    get sightRange():number {
+        return Animal.settings.TraitEffectConstants.sense * this.traits.sense;
+    }
+
     get movementEnergyCost(): number{
         return Animal.settings.EnergyCostConstants.speed * (1.5 ** this.traits.speed) * this.traits.speed;
     }
@@ -316,8 +321,11 @@ export class Animal {
     }
 
     wander(): void{
-        if(Random.randomChance(.01) || this.moveTarget == null)this.moveTarget = Simulation.getRandomPositionInWorld();
+        if(Random.randomChance(.01) || this.moveTarget == null)this.moveTarget = this.getRandomPositionInSightRange();
         this.move();
+        if(Vector2D.getDistance(this.position, Vector2D.zero) > Simulation.settings.worldRadius){
+            this.moveTarget = Vector2D.getDirection(this.position, Vector2D.zero).scale(this.sightRange).add(this.position);
+        }
     }
 
     eat(food: Food): void {
@@ -329,7 +337,7 @@ export class Animal {
         let visibleFood: Food[] = [];
         for (let food of foods) {
             const relativePosition = this.position.sub(food.position)
-            if ((relativePosition.x **2) + (relativePosition.y**2) <= (Animal.settings.TraitEffectConstants.sense * this.traits.sense)**2) visibleFood.push(food)
+            if ((relativePosition.x **2) + (relativePosition.y**2) <= (this.sightRange)**2) visibleFood.push(food)
         }
         return visibleFood;
     }
@@ -337,9 +345,19 @@ export class Animal {
     getVisibleAnimals(animals = Simulation.animals): Animal[]{
         let visibleAnimals: Animal[] = [];
         for (let animal of animals) {
-            if (Vector2D.getDistance(this.position, animal.position) <= Animal.settings.TraitEffectConstants.sense * this.traits.sense) visibleAnimals.push(animal)
+            if (Vector2D.getDistance(this.position, animal.position) <= this.sightRange) visibleAnimals.push(animal)
         }
         return visibleAnimals;
+    }
+
+    getRandomPositionInSightRange(): Vector2D{
+        const r = Math.sqrt(Math.random()) * this.sightRange
+        const theta = Math.random() * Math.PI * 2
+
+        return new Vector2D(
+            (r * Math.cos(theta)) + this.position.x,
+            (r * Math.sin(theta)) + this.position.y,
+        )
     }
 
     constructor(position: Vector2D, startingEnergy: number, traits: AnimalTraits, generation:number) {

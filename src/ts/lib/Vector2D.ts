@@ -119,6 +119,10 @@ export class Vector2D {
         return v1.sub(v0).length
     }
 
+    static getDirection(v0:Vector2D, v1:Vector2D): Vector2D{
+        return v1.sub(v0).normalized
+    }
+
     copy(){
         return new Vector2D(this.x,this.y)
     }
