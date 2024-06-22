@@ -1,7 +1,6 @@
 {
     "compilerOptions": {
         "target": "ESNext",
-        "watch": true,
         "outDir": "./src/js/",
         "lib":["DOM","ES2017"],
         "moduleResolution": "node"
