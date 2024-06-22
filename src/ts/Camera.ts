@@ -187,23 +187,32 @@ class Camera {
     }
 
     static queueFoods(): void {
+        const positions = [];
         for (let food of Simulation.foods) {
             let position = this.project(food.position);
 
             if (Math.abs(position.x) - Food.radius > this.canvas2D.width || Math.abs(position.y) - Food.radius > this.canvas2D.height) continue;
-            this.canvas2D.queueCircle(new Vector2D(Math.round(position.x),Math.round(position.y)), Food.radius * this.zoom, 0, "lime")
+            positions.push(new Vector2D(Math.round(position.x),Math.round(position.y)));
         }
+
+        this.canvas2D.queueManyCircles(positions, new Array(positions.length).fill(Food.radius * this.zoom), 0, "lime")
     }
 
     static queueAnimals(): void {
+        const positions = [];
+        const senseRadii = [];
         for (let animal of Simulation.animals) {
             let position = this.project(animal.position);
 
             if (Math.abs(position.x) - Animal.radius > this.canvas2D.width || Math.abs(position.y) - Animal.radius > this.canvas2D.height) continue;
-            this.canvas2D.queueCircle(new Vector2D(Math.round(position.x),Math.round(position.y)), Animal.radius * this.zoom, 0, "grey")
-            if (this.senseVisualization) this.canvas2D.queueCircle(new Vector2D(Math.round(position.x),Math.round(position.y)), animal.traits.sense * Animal.settings.TraitEffectConstants.sense * this.zoom,1,"#FFFFFF03")
+            positions.push(new Vector2D(Math.round(position.x),Math.round(position.y)))
+            if (this.senseVisualization) senseRadii.push(animal.traits.sense * Animal.settings.TraitEffectConstants.sense * this.zoom);
             if (this.animalNames) this.canvas2D.queueText(new Vector2D(Math.round(position.x),Math.round(position.y + (Animal.radius + 3) * this.zoom)),animal.name,10 * this.zoom, 2)
         }
+
+        this.canvas2D.queueManyCircles(positions, new Array(positions.length).fill(Animal.radius * this.zoom), 0, "grey")
+        if(this.senseVisualization) this.canvas2D.queueManyCircles(positions, senseRadii, 1, "#FFFFFF03")
+        
     }
     static render() {
         if(!this.rendering) return;

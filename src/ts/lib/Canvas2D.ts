@@ -36,6 +36,48 @@ export class Canvas2DRectangleEntry implements Canvas2DEntry {
     }
 }
 
+export class Canvas2DManyCirclesEntry implements Canvas2DEntry {
+    zIndex: number;
+    args: {
+        positions: Vector2D[],
+        radii: number[],
+        color: string
+    }
+
+    /**
+     * @param {Vector2D[]} positions an array of positions in canvas coordinates
+     * @param {number[]} radii an array of numbers representing the radii of the circles
+     * @param {number} zIndex a number representing the zIndex
+     * @param {string} color a css color string
+     */
+    constructor(positions: Vector2D[], radii: number[], zIndex: number = 0, color: string = "#FFFFFF") {
+        this.zIndex = zIndex;
+
+        this.args = {
+            positions: positions,
+            radii: radii,
+            color: color
+        };
+    }
+
+    draw(context: CanvasRenderingContext2D) {
+        context.fillStyle = this.args.color;
+        context.strokeStyle = this.args.color;
+
+        context.beginPath();
+        for (let i = 0; i < this.args.positions.length; i++){
+            const position = this.args.positions[i];
+            const radius = this.args.radii[i];
+
+            context.moveTo(position.x, position.y);
+            context.arc(position.x, position.y, radius, 0, 2 * Math.PI);
+        }
+        context.fill();
+        context.stroke();
+        context.closePath();
+    }
+}
+
 export class Canvas2DCircleEntry implements Canvas2DEntry {
     zIndex: number;
     args: {
@@ -384,6 +426,26 @@ export default class Canvas2D {
 
     /**
      * 
+     * @param {Vector2D[]} positions an array of vector coordinates representing the center of the circles
+     * @param {number[]} radii an array of numbers representing the radius of the circles
+     * @param {number} zIndex a number representing the zIndex
+     * @param {string} color a css color string
+     * @description adds a circle to the draw queue
+     */
+    queueManyCircles(positions: Vector2D[], radii: number[], zIndex: number = 0, color: string = "#FFFFFF"): void {
+        if(positions.length != radii.length) throw new Error("positions and radii must have the same number of elements");
+        const entry = new Canvas2DManyCirclesEntry(
+            positions.map(this.vectorCoordinatesToCanvasCoordinates.bind(this)),
+            radii,
+            zIndex,
+            color
+        )
+
+        this.addToDrawQueue(entry)
+    }
+
+    /**
+     * 
      * @param {Vector2D} pointA vector coordinates representing the starting point of the line
      * @param {Vector2D} pointB vector coordinates representing the ending point of the line
      * @param {number} lineSize a number representing the line's stroke width
@@ -447,7 +509,7 @@ export default class Canvas2D {
 
     /**
     * 
-    * @param {Vector2D} vector2D a Vector2D in canvas coordinates
+    * @param {Vector2D} coordinates a Vector2D in canvas coordinates
     * @returns modifed Vector2D in vector coordinates
     * @description converts the canvas coordinate system ((0,0) being in the top right and y down) into
     * vector coordinates ((0,0) being middle and y up) 
