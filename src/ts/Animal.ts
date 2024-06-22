@@ -40,8 +40,8 @@ export enum AnimalActions{
 }
 
 export enum AnimalDeathTypes{
-    starvation = "starved to death",
-    oldAge = "died of old age"
+    starvation = "starvation",
+    oldAge = "old age"
 }
 
 export const AnimalTraitsClampValues:{
@@ -73,6 +73,7 @@ export class Animal {
         targetFood: Food | null;
     } = {} as typeof this.memory;
     offspringCount: number = 0;
+    offsprings: Animal[] = [];
     generation: number;
 
     get sightRange():number {
@@ -224,7 +225,9 @@ export class Animal {
 
     reproduce():void{
         this.energy -= this.reproductionCost;
-        Simulation.animals.push(this.createOffspring());
+        const offspring = this.createOffspring();
+        Simulation.animals.push(offspring);
+        this.offsprings.push(offspring);
         this.offspringCount++;
     }
 

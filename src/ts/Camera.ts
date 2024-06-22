@@ -21,6 +21,7 @@ class Camera {
     static animalNames: boolean = false;
     static lastFrameTime: number;
     static followTarget: Animal | null;
+    static followOffspringOnReproduction: boolean;
     static lastTenFPS: number[] = [];
     static lastMouseData: {
         x: number | null
@@ -131,7 +132,16 @@ class Camera {
 
     static update() {
 
-        if(!this.followTarget?.alive) this.followTarget = null;
+        //check if followTarget has died
+        if(this.followTarget != null && !this.followTarget.alive) {
+            alert(`${this.followTarget.name} has died of ${this.followTarget.reasonForDeath}`);
+            this.followTarget = null;
+        }
+
+        //switch target on reproduction
+        if (this.followOffspringOnReproduction && this.followTarget != null && this.followTarget.offspringCount > 0){
+            this.followTarget = this.followTarget.offsprings[0];
+        }
 
         let speed = KeyboardInput.keys.ShiftLeft ? this.cameraSpeed : this.cameraSpeed * 3;
         let zoomSpeed = KeyboardInput.keys.ShiftLeft ? this.zoom/100 : this.zoom/20;
@@ -211,9 +221,40 @@ class Camera {
         }
 
         this.canvas2D.queueManyCircles(positions, new Array(positions.length).fill(Animal.radius * this.zoom), 0, "grey")
-        if(this.senseVisualization) this.canvas2D.queueManyCircles(positions, senseRadii, 1, "#FFFFFF44")
+        if(this.senseVisualization) this.canvas2D.queueManyCircles(positions, senseRadii, 1, "#FFFFFF44");
+                
         
+        //special info for follow target
+        if(this.followTarget == null) return;
+        const animal = this.followTarget;
+        const position = this.project(animal.position);
+        //sense visualization
+        this.canvas2D.queueCircle(new Vector2D(Math.round(position.x),Math.round(position.y)),animal.traits.sense * Animal.settings.TraitEffectConstants.sense * this.zoom, 1, "#FFFFFF44");
+        //line to move target
+        if(animal.moveTarget != null) this.canvas2D.queueLine(position,this.project(animal.moveTarget),this.zoom,1,"white");
+        //name
+        this.canvas2D.queueText(new Vector2D(Math.round(position.x),Math.round(position.y + (Animal.radius + 3) * this.zoom)),animal.name,10 * this.zoom, 2);
+        //action text
+        this.canvas2D.queueText(new Vector2D(Math.round(position.x),Math.round(position.y + (Animal.radius + 13) * this.zoom)),animal.currentAction,10 * this.zoom, 2, "#cccccc");
+        
+        //energy
+        this.canvas2D.queueText(new Vector2D(Math.round(position.x),Math.round(position.y - (Animal.radius + 5) * this.zoom)),`energy: ${animal.energy.toFixed(2)}`,5 * this.zoom, 2, "#cccccc");
+        //age
+        this.canvas2D.queueText(new Vector2D(Math.round(position.x),Math.round(position.y - (Animal.radius + 10) * this.zoom)),`age: ${animal.age.totalTicks/100}`,5 * this.zoom, 2, "#cccccc");
+        //number of offspring
+        this.canvas2D.queueText(new Vector2D(Math.round(position.x),Math.round(position.y - (Animal.radius + 15) * this.zoom)),`offspring count: ${animal.offspringCount}`,5 * this.zoom, 2, "#cccccc");
+
+        //stats
+        this.canvas2D.queueText(new Vector2D(Math.round(position.x),Math.round(position.y - (Animal.radius + 20) * this.zoom)),`speed: ${animal.traits.speed.toFixed(2)}`,3 * this.zoom, 2, "#cccccc");
+        this.canvas2D.queueText(new Vector2D(Math.round(position.x),Math.round(position.y - (Animal.radius + 23) * this.zoom)),`sense: ${animal.traits.sense.toFixed(2)}`,3 * this.zoom, 2, "#cccccc");
+        this.canvas2D.queueText(new Vector2D(Math.round(position.x),Math.round(position.y - (Animal.radius + 26) * this.zoom)),`reproductiveBuffer: ${animal.traits.reproductiveBuffer.toFixed(2)}`,3 * this.zoom, 2, "#cccccc");
+        this.canvas2D.queueText(new Vector2D(Math.round(position.x),Math.round(position.y - (Animal.radius + 29) * this.zoom)),`offspringInvestment: ${animal.traits.offspringInvestment.toFixed(2)}`,3 * this.zoom, 2, "#cccccc");
+
+        //generation
+        this.canvas2D.queueText(new Vector2D(Math.round(position.x),Math.round(position.y - (Animal.radius + 32) * this.zoom)),`generation: ${animal.generation}`,3 * this.zoom, 2, "#cccccc");
+
     }
+        
     static render() {
         if(!this.rendering) return;
         if(this.renderingFood)this.queueFoods();
