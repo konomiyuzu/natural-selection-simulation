@@ -62,7 +62,6 @@ export class Canvas2DManyCirclesEntry implements Canvas2DEntry {
 
     draw(context: CanvasRenderingContext2D) {
         context.fillStyle = this.args.color;
-        context.strokeStyle = this.args.color;
 
         context.beginPath();
         for (let i = 0; i < this.args.positions.length; i++){
@@ -73,7 +72,6 @@ export class Canvas2DManyCirclesEntry implements Canvas2DEntry {
             context.arc(position.x, position.y, radius, 0, 2 * Math.PI);
         }
         context.fill();
-        context.stroke();
         context.closePath();
     }
 }

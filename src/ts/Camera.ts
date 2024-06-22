@@ -211,7 +211,7 @@ class Camera {
         }
 
         this.canvas2D.queueManyCircles(positions, new Array(positions.length).fill(Animal.radius * this.zoom), 0, "grey")
-        if(this.senseVisualization) this.canvas2D.queueManyCircles(positions, senseRadii, 1, "#FFFFFF03")
+        if(this.senseVisualization) this.canvas2D.queueManyCircles(positions, senseRadii, 1, "#FFFFFF44")
         
     }
     static render() {
